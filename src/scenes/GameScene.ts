@@ -52,11 +52,92 @@ export default class GameScene extends Phaser.Scene {
 		}
 
 		graphics.strokePath();
+
+		// Draw coordinate axes through Origin
+		this.createCoordinateAxes();
+	}
+
+	private createCoordinateAxes() {
+		// Calculate Origin position (same as in createOrigin)
+		const originX = (this.gridWidth / 2) * this.gridSize;
+		const originY = (this.gridHeight / 2) * this.gridSize;
+
+		// Create axes graphics
+		const axesGraphics = this.add.graphics();
+
+		// X-axis (horizontal line through Origin)
+		axesGraphics.lineStyle(3, 0xe74c3c, 1); // Red, thick line
+		axesGraphics.moveTo(0, originY);
+		axesGraphics.lineTo(this.gridWidth * this.gridSize, originY);
+
+		// Y-axis (vertical line through Origin)
+		axesGraphics.lineStyle(3, 0x27ae60, 1); // Green, thick line
+		axesGraphics.moveTo(originX, 0);
+		axesGraphics.lineTo(originX, this.gridHeight * this.gridSize);
+
+		axesGraphics.strokePath();
+
+		// Add axis labels
+		this.add.text(originX + 10, 10, "Y", {
+			fontSize: "16px",
+			color: "#27ae60",
+			fontFamily: "Arial",
+		});
+
+		this.add.text(this.gridWidth * this.gridSize - 20, originY - 10, "X", {
+			fontSize: "16px",
+			color: "#e74c3c",
+			fontFamily: "Arial",
+		});
+
+		// Add coordinate labels along axes
+		this.addCoordinateLabels(originX, originY);
+	}
+
+	private addCoordinateLabels(originX: number, originY: number) {
+		// Add coordinate numbers along X-axis
+		for (let x = 0; x <= this.gridWidth; x += 4) {
+			const worldX = x * this.gridSize;
+			if (worldX !== originX) {
+				// Don't label the origin itself
+				const coordX = x - this.gridWidth / 2;
+				this.add
+					.text(worldX, originY + 15, coordX.toString(), {
+						fontSize: "10px",
+						color: "#e74c3c",
+						fontFamily: "Arial",
+					})
+					.setOrigin(0.5);
+			}
+		}
+
+		// Add coordinate numbers along Y-axis
+		for (let y = 0; y <= this.gridHeight; y += 4) {
+			const worldY = y * this.gridSize;
+			if (worldY !== originY) {
+				// Don't label the origin itself
+				const coordY = this.gridHeight / 2 - y;
+				this.add
+					.text(originX - 15, worldY, coordY.toString(), {
+						fontSize: "10px",
+						color: "#27ae60",
+						fontFamily: "Arial",
+					})
+					.setOrigin(0.5);
+			}
+		}
+
+		// Add origin label (0,0)
+		this.add.text(originX - 20, originY + 20, "(0,0)", {
+			fontSize: "12px",
+			color: "#ffffff",
+			fontFamily: "Arial",
+		});
 	}
 
 	private createOrigin() {
-		// Place Origin at the center-right of the grid
-		const originX = (this.gridWidth - 2) * this.gridSize;
+		// Place Origin at the center of the grid for proper four-quadrant system
+		const originX = (this.gridWidth / 2) * this.gridSize;
 		const originY = (this.gridHeight / 2) * this.gridSize;
 
 		this.origin = this.add.rectangle(
@@ -150,7 +231,24 @@ export default class GameScene extends Phaser.Scene {
 		// Mark grid cell as occupied
 		this.grid[gridY][gridX] = true;
 
-		console.log(`Tower placed at grid position (${gridX}, ${gridY})`);
+		// Calculate coordinate system position (center-based)
+		const originGridX = this.gridWidth / 2;
+		const originGridY = this.gridHeight / 2;
+		const coordX = gridX - originGridX;
+		const coordY = originGridY - gridY;
+
+		console.log(
+			`Tower placed at grid position (${gridX}, ${gridY}) - Coordinates: (${coordX}, ${coordY})`
+		);
+
+		// Add coordinate label above tower
+		this.add
+			.text(x, y - this.gridSize / 2 - 5, `(${coordX},${coordY})`, {
+				fontSize: "8px",
+				color: "#ffffff",
+				fontFamily: "Arial",
+			})
+			.setOrigin(0.5);
 	}
 
 	update() {
