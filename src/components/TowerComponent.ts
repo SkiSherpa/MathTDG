@@ -33,14 +33,17 @@ export class TowerComponent {
 		const x = gridX * this.gridSize;
 		const y = gridY * this.gridSize;
 
-		// Create tower visual
+		// Create tower visual with border
 		const towerGameObject = this.scene.add.rectangle(
 			x,
 			y,
-			this.gridSize * 0.8,
-			this.gridSize * 0.8,
+			this.gridSize, // Full grid size so towers touch when adjacent
+			this.gridSize, // Full grid size so towers touch when adjacent
 			Colors.towers.background
 		);
+
+		// Add border to tower
+		towerGameObject.setStrokeStyle(2, 0x0087cc); // 2px border with #0087CC color
 
 		// Calculate coordinate system position (center-based)
 		const originGridX = this.gridWidth / 2;
