@@ -7,8 +7,8 @@ import { UIComponent } from "../components/UIComponent";
 
 export default class GameScene extends Phaser.Scene {
 	private gridSize: number = 32; // Size of each grid cell
-	private gridWidth: number = 32; // Number of grid cells horizontally
-	private gridHeight: number = 24; // Number of grid cells vertically
+	private gridWidth: number = 27; // Number of grid cells horizontally (-13 to 13)
+	private gridHeight: number = 27; // Number of grid cells vertically (-13 to 13)
 
 	// Components
 	private gridComponent!: GridComponent;
@@ -56,21 +56,27 @@ export default class GameScene extends Phaser.Scene {
 			this,
 			this.gridSize,
 			this.gridWidth,
-			this.gridHeight
+			this.gridHeight,
+			this.gridComponent.getOffsetX(),
+			this.gridComponent.getOffsetY()
 		);
 
 		this.originComponent = new OriginComponent(
 			this,
 			this.gridSize,
 			this.gridWidth,
-			this.gridHeight
+			this.gridHeight,
+			this.gridComponent.getOffsetX(),
+			this.gridComponent.getOffsetY()
 		);
 
 		this.towerComponent = new TowerComponent(
 			this,
 			this.gridSize,
 			this.gridWidth,
-			this.gridHeight
+			this.gridHeight,
+			this.gridComponent.getOffsetX(),
+			this.gridComponent.getOffsetY()
 		);
 
 		this.uiComponent = new UIComponent(this);
@@ -79,8 +85,11 @@ export default class GameScene extends Phaser.Scene {
 	private onGridClick(pointer: Phaser.Input.Pointer) {
 		if (this.uiComponent.getGamePhase() !== "placement") return;
 
-		const gridX = Math.floor(pointer.x / this.gridSize);
-		const gridY = Math.floor(pointer.y / this.gridSize);
+		// Account for grid offset when calculating grid position
+		const offsetX = this.gridComponent.getOffsetX();
+		const offsetY = this.gridComponent.getOffsetY();
+		const gridX = Math.floor((pointer.x - offsetX) / this.gridSize);
+		const gridY = Math.floor((pointer.y - offsetY) / this.gridSize);
 
 		// Check if position is valid
 		if (this.gridComponent.isValidPosition(gridX, gridY)) {

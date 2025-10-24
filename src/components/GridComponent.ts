@@ -7,6 +7,8 @@ export class GridComponent {
 	private gridWidth: number;
 	private gridHeight: number;
 	private grid: boolean[][];
+	private offsetX: number = 0;
+	private offsetY: number = 0;
 
 	constructor(
 		scene: Phaser.Scene,
@@ -18,7 +20,19 @@ export class GridComponent {
 		this.gridSize = gridSize;
 		this.gridWidth = gridWidth;
 		this.gridHeight = gridHeight;
+		this.calculateCenterOffset();
 		this.initializeGrid();
+	}
+
+	private calculateCenterOffset() {
+		// Center the grid on the canvas
+		const canvasWidth = this.scene.scale.width;
+		const canvasHeight = this.scene.scale.height;
+		const gridWidth = this.gridWidth * this.gridSize;
+		const gridHeight = this.gridHeight * this.gridSize;
+
+		this.offsetX = (canvasWidth - gridWidth) / 2;
+		this.offsetY = (canvasHeight - gridHeight) / 2;
 	}
 
 	private initializeGrid() {
@@ -33,16 +47,18 @@ export class GridComponent {
 		const gridStyle = getGridLineStyle();
 		graphics.lineStyle(gridStyle.thickness, gridStyle.color, gridStyle.alpha);
 
-		// Vertical lines
+		// Vertical lines (fix 0.5 unit shift by using integer coordinates)
 		for (let x = 0; x <= this.gridWidth; x++) {
-			graphics.moveTo(x * this.gridSize, 0);
-			graphics.lineTo(x * this.gridSize, this.gridHeight * this.gridSize);
+			const lineX = this.offsetX + x * this.gridSize;
+			graphics.moveTo(lineX, this.offsetY);
+			graphics.lineTo(lineX, this.offsetY + this.gridHeight * this.gridSize);
 		}
 
-		// Horizontal lines
+		// Horizontal lines (fix 0.5 unit shift by using integer coordinates)
 		for (let y = 0; y <= this.gridHeight; y++) {
-			graphics.moveTo(0, y * this.gridSize);
-			graphics.lineTo(this.gridWidth * this.gridSize, y * this.gridSize);
+			const lineY = this.offsetY + y * this.gridSize;
+			graphics.moveTo(this.offsetX, lineY);
+			graphics.lineTo(this.offsetX + this.gridWidth * this.gridSize, lineY);
 		}
 
 		graphics.strokePath();
@@ -78,5 +94,13 @@ export class GridComponent {
 
 	public getGrid(): boolean[][] {
 		return this.grid;
+	}
+
+	public getOffsetX(): number {
+		return this.offsetX;
+	}
+
+	public getOffsetY(): number {
+		return this.offsetY;
 	}
 }

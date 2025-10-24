@@ -14,24 +14,30 @@ export class TowerComponent {
 	private gridSize: number;
 	private gridWidth: number;
 	private gridHeight: number;
+	private offsetX: number = 0;
+	private offsetY: number = 0;
 	private towers: Tower[] = [];
 
 	constructor(
 		scene: Phaser.Scene,
 		gridSize: number,
 		gridWidth: number,
-		gridHeight: number
+		gridHeight: number,
+		offsetX: number = 0,
+		offsetY: number = 0
 	) {
 		this.scene = scene;
 		this.gridSize = gridSize;
 		this.gridWidth = gridWidth;
 		this.gridHeight = gridHeight;
+		this.offsetX = offsetX;
+		this.offsetY = offsetY;
 	}
 
 	public placeTower(gridX: number, gridY: number): Tower | null {
 		// Place tower at grid line intersection (like Origin)
-		const x = gridX * this.gridSize;
-		const y = gridY * this.gridSize;
+		const x = this.offsetX + gridX * this.gridSize;
+		const y = this.offsetY + gridY * this.gridSize;
 
 		// Create tower visual with border
 		const towerGameObject = this.scene.add.rectangle(

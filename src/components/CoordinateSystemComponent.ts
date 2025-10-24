@@ -6,23 +6,31 @@ export class CoordinateSystemComponent {
 	private gridSize: number;
 	private gridWidth: number;
 	private gridHeight: number;
+	private offsetX: number = 0;
+	private offsetY: number = 0;
 
 	constructor(
 		scene: Phaser.Scene,
 		gridSize: number,
 		gridWidth: number,
-		gridHeight: number
+		gridHeight: number,
+		offsetX: number = 0,
+		offsetY: number = 0
 	) {
 		this.scene = scene;
 		this.gridSize = gridSize;
 		this.gridWidth = gridWidth;
 		this.gridHeight = gridHeight;
+		this.offsetX = offsetX;
+		this.offsetY = offsetY;
 	}
 
 	public createCoordinateAxes() {
-		// Calculate Origin position
-		const originX = (this.gridWidth / 2) * this.gridSize;
-		const originY = (this.gridHeight / 2) * this.gridSize;
+		// Calculate Origin position with offset - ensure it's at the center of the grid
+		const centerGridX = Math.floor(this.gridWidth / 2);
+		const centerGridY = Math.floor(this.gridHeight / 2);
+		const originX = this.offsetX + centerGridX * this.gridSize;
+		const originY = this.offsetY + centerGridY * this.gridSize;
 
 		// Create axes graphics
 		const axesGraphics = this.scene.add.graphics();
@@ -30,13 +38,16 @@ export class CoordinateSystemComponent {
 		// X-axis (horizontal line through Origin)
 		const axisStyle = getAxisLineStyle();
 		axesGraphics.lineStyle(axisStyle.thickness, Colors.axes.xAxis, 1);
-		axesGraphics.moveTo(0, originY);
-		axesGraphics.lineTo(this.gridWidth * this.gridSize, originY);
+		axesGraphics.moveTo(this.offsetX, originY);
+		axesGraphics.lineTo(this.offsetX + this.gridWidth * this.gridSize, originY);
 
 		// Y-axis (vertical line through Origin)
 		axesGraphics.lineStyle(axisStyle.thickness, Colors.axes.yAxis, 1);
-		axesGraphics.moveTo(originX, 0);
-		axesGraphics.lineTo(originX, this.gridHeight * this.gridSize);
+		axesGraphics.moveTo(originX, this.offsetY);
+		axesGraphics.lineTo(
+			originX,
+			this.offsetY + this.gridHeight * this.gridSize
+		);
 
 		axesGraphics.strokePath();
 
@@ -48,17 +59,17 @@ export class CoordinateSystemComponent {
 	}
 
 	private addAxisLabels(originX: number, originY: number) {
-		// Y-axis label
-		this.scene.add.text(originX + 10, 10, "Y", {
+		// Y-axis label - at the top of the Y-axis, slightly to the right
+		this.scene.add.text(originX + 15, this.offsetY + 10, "Y", {
 			fontSize: "16px",
 			color: `#${Colors.axes.yAxis.toString(16).padStart(6, "0")}`,
 			fontFamily: "Arial",
 		});
 
-		// X-axis label
+		// X-axis label - at the right end of the X-axis, slightly up
 		this.scene.add.text(
-			this.gridWidth * this.gridSize - 20,
-			originY - 10,
+			this.offsetX + this.gridWidth * this.gridSize - 10,
+			originY - 15,
 			"X",
 			{
 				fontSize: "16px",
@@ -69,12 +80,16 @@ export class CoordinateSystemComponent {
 	}
 
 	private addCoordinateLabels(originX: number, originY: number) {
-		// Add coordinate numbers along X-axis
-		for (let x = 0; x <= this.gridWidth; x += 4) {
-			const worldX = x * this.gridSize;
-			if (worldX !== originX) {
-				// Don't label the origin itself
-				const coordX = x - this.gridWidth / 2;
+		// Add coordinate numbers along X-axis (symmetrical around origin)
+		const centerGridX = Math.floor(this.gridWidth / 2);
+		const centerGridY = Math.floor(this.gridHeight / 2);
+
+		// Create symmetrical X-axis labels
+		const xLabels = [-12, -9, -6, -3, 3, 6, 9, 12]; // Symmetrical around 0
+		for (const coordX of xLabels) {
+			const gridX = centerGridX + coordX;
+			if (gridX >= 0 && gridX <= this.gridWidth) {
+				const worldX = this.offsetX + gridX * this.gridSize;
 				this.scene.add
 					.text(worldX, originY + 15, coordX.toString(), {
 						fontSize: "10px",
@@ -87,12 +102,12 @@ export class CoordinateSystemComponent {
 			}
 		}
 
-		// Add coordinate numbers along Y-axis
-		for (let y = 0; y <= this.gridHeight; y += 4) {
-			const worldY = y * this.gridSize;
-			if (worldY !== originY) {
-				// Don't label the origin itself
-				const coordY = this.gridHeight / 2 - y;
+		// Add coordinate numbers along Y-axis (symmetrical around origin)
+		const yLabels = [-12, -9, -6, -3, 3, 6, 9, 12]; // Symmetrical around 0
+		for (const coordY of yLabels) {
+			const gridY = centerGridY - coordY; // Y-axis is inverted
+			if (gridY >= 0 && gridY <= this.gridHeight) {
+				const worldY = this.offsetY + gridY * this.gridSize;
 				this.scene.add
 					.text(originX - 15, worldY, coordY.toString(), {
 						fontSize: "10px",

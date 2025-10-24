@@ -6,24 +6,32 @@ export class OriginComponent {
 	private gridSize: number;
 	private gridWidth: number;
 	private gridHeight: number;
+	private offsetX: number = 0;
+	private offsetY: number = 0;
 	private origin!: Phaser.GameObjects.Rectangle;
 
 	constructor(
 		scene: Phaser.Scene,
 		gridSize: number,
 		gridWidth: number,
-		gridHeight: number
+		gridHeight: number,
+		offsetX: number = 0,
+		offsetY: number = 0
 	) {
 		this.scene = scene;
 		this.gridSize = gridSize;
 		this.gridWidth = gridWidth;
 		this.gridHeight = gridHeight;
+		this.offsetX = offsetX;
+		this.offsetY = offsetY;
 	}
 
 	public createOrigin() {
 		// Place Origin at the center of the grid for proper four-quadrant system
-		const originX = (this.gridWidth / 2) * this.gridSize;
-		const originY = (this.gridHeight / 2) * this.gridSize;
+		const centerGridX = Math.floor(this.gridWidth / 2);
+		const centerGridY = Math.floor(this.gridHeight / 2);
+		const originX = this.offsetX + centerGridX * this.gridSize;
+		const originY = this.offsetY + centerGridY * this.gridSize;
 
 		this.origin = this.scene.add.rectangle(
 			originX,
