@@ -12,8 +12,8 @@ export const Colors = {
 
 	// Coordinate System
 	axes: {
-		xAxis: 0xe74c3c, // Red
-		yAxis: 0x27ae60, // Green
+		xAxis: 0x5a5a70, // Dark Blue
+		yAxis: 0x5a5a70, // Dark Blue
 		axisThickness: 3,
 	},
 
@@ -33,13 +33,13 @@ export const Colors = {
 	ui: {
 		primary: 0xffffff, // White
 		secondary: 0xbdc3c7, // Light gray
-		background: 0x2c3e50, // Dark blue-gray
+		background: 0xdfdbc3, // beige
 	},
 
 	// Coordinate Labels
 	coordinates: {
-		xLabels: 0xe74c3c, // Red (matching X-axis)
-		yLabels: 0x27ae60, // Green (matching Y-axis)
+		xLabels: 0x5a5a70, // Dark blue
+		yLabels: 0x5a5a70, //Dark blue
 		originLabel: 0xffffff, // White
 	},
 
