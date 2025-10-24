@@ -141,34 +141,25 @@ export default class GameScene extends Phaser.Scene {
 		const originY = (this.gridHeight / 2) * this.gridSize;
 
 		this.origin = this.add.rectangle(
-			originX + this.gridSize / 2,
-			originY + this.gridSize / 2,
-			this.gridSize * 2,
-			this.gridSize * 2,
+			originX,
+			originY,
+			this.gridSize,
+			this.gridSize,
 			0xe74c3c
 		);
 
 		// Add label
 		this.add
-			.text(originX + this.gridSize, originY + this.gridSize, "ORIGIN", {
-				fontSize: "12px",
+			.text(originX, originY, "ORIGIN", {
+				fontSize: "10px",
 				color: "#ffffff",
 				fontFamily: "Arial",
 			})
 			.setOrigin(0.5);
 
-		// Mark grid cells as occupied
+		// Mark single grid cell as occupied
 		this.grid[Math.floor(originY / this.gridSize)][
 			Math.floor(originX / this.gridSize)
-		] = true;
-		this.grid[Math.floor(originY / this.gridSize)][
-			Math.floor(originX / this.gridSize) + 1
-		] = true;
-		this.grid[Math.floor(originY / this.gridSize) + 1][
-			Math.floor(originX / this.gridSize)
-		] = true;
-		this.grid[Math.floor(originY / this.gridSize) + 1][
-			Math.floor(originX / this.gridSize) + 1
 		] = true;
 	}
 
