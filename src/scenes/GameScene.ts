@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import { Colors, getGridLineStyle, getAxisLineStyle } from "../design/colors";
 
 export default class GameScene extends Phaser.Scene {
 	private gridSize: number = 32; // Size of each grid cell
@@ -37,7 +38,8 @@ export default class GameScene extends Phaser.Scene {
 	private createGameBoard() {
 		// Draw grid lines
 		const graphics = this.add.graphics();
-		graphics.lineStyle(1, 0x34495e, 0.5);
+		const gridStyle = getGridLineStyle();
+		graphics.lineStyle(gridStyle.thickness, gridStyle.color, gridStyle.alpha);
 
 		// Vertical lines
 		for (let x = 0; x <= this.gridWidth; x++) {
@@ -66,12 +68,13 @@ export default class GameScene extends Phaser.Scene {
 		const axesGraphics = this.add.graphics();
 
 		// X-axis (horizontal line through Origin)
-		axesGraphics.lineStyle(3, 0xe74c3c, 1); // Red, thick line
+		const axisStyle = getAxisLineStyle();
+		axesGraphics.lineStyle(axisStyle.thickness, Colors.axes.xAxis, 1);
 		axesGraphics.moveTo(0, originY);
 		axesGraphics.lineTo(this.gridWidth * this.gridSize, originY);
 
 		// Y-axis (vertical line through Origin)
-		axesGraphics.lineStyle(3, 0x27ae60, 1); // Green, thick line
+		axesGraphics.lineStyle(axisStyle.thickness, Colors.axes.yAxis, 1);
 		axesGraphics.moveTo(originX, 0);
 		axesGraphics.lineTo(originX, this.gridHeight * this.gridSize);
 
@@ -80,13 +83,13 @@ export default class GameScene extends Phaser.Scene {
 		// Add axis labels
 		this.add.text(originX + 10, 10, "Y", {
 			fontSize: "16px",
-			color: "#27ae60",
+			color: `#${Colors.axes.yAxis.toString(16).padStart(6, "0")}`,
 			fontFamily: "Arial",
 		});
 
 		this.add.text(this.gridWidth * this.gridSize - 20, originY - 10, "X", {
 			fontSize: "16px",
-			color: "#e74c3c",
+			color: `#${Colors.axes.xAxis.toString(16).padStart(6, "0")}`,
 			fontFamily: "Arial",
 		});
 
@@ -104,7 +107,9 @@ export default class GameScene extends Phaser.Scene {
 				this.add
 					.text(worldX, originY + 15, coordX.toString(), {
 						fontSize: "10px",
-						color: "#e74c3c",
+						color: `#${Colors.coordinates.xLabels
+							.toString(16)
+							.padStart(6, "0")}`,
 						fontFamily: "Arial",
 					})
 					.setOrigin(0.5);
@@ -120,7 +125,9 @@ export default class GameScene extends Phaser.Scene {
 				this.add
 					.text(originX - 15, worldY, coordY.toString(), {
 						fontSize: "10px",
-						color: "#27ae60",
+						color: `#${Colors.coordinates.yLabels
+							.toString(16)
+							.padStart(6, "0")}`,
 						fontFamily: "Arial",
 					})
 					.setOrigin(0.5);
@@ -130,7 +137,7 @@ export default class GameScene extends Phaser.Scene {
 		// Add origin label (0,0)
 		this.add.text(originX - 20, originY + 20, "(0,0)", {
 			fontSize: "12px",
-			color: "#ffffff",
+			color: `#${Colors.coordinates.originLabel.toString(16).padStart(6, "0")}`,
 			fontFamily: "Arial",
 		});
 	}
@@ -145,14 +152,14 @@ export default class GameScene extends Phaser.Scene {
 			originY,
 			this.gridSize,
 			this.gridSize,
-			0xe74c3c
+			Colors.origin.background
 		);
 
 		// Add label
 		this.add
 			.text(originX, originY, "ORIGIN", {
 				fontSize: "10px",
-				color: "#ffffff",
+				color: `#${Colors.origin.label.toString(16).padStart(6, "0")}`,
 				fontFamily: "Arial",
 			})
 			.setOrigin(0.5);
@@ -168,7 +175,7 @@ export default class GameScene extends Phaser.Scene {
 		this.add
 			.text(10, 10, `Phase: ${this.gamePhase.toUpperCase()}`, {
 				fontSize: "16px",
-				color: "#ffffff",
+				color: `#${Colors.ui.primary.toString(16).padStart(6, "0")}`,
 				fontFamily: "Arial",
 			})
 			.setOrigin(0, 0);
@@ -177,7 +184,7 @@ export default class GameScene extends Phaser.Scene {
 		this.add
 			.text(10, 30, "Click on empty grid cells to place towers", {
 				fontSize: "12px",
-				color: "#bdc3c7",
+				color: `#${Colors.ui.secondary.toString(16).padStart(6, "0")}`,
 				fontFamily: "Arial",
 			})
 			.setOrigin(0, 0);
@@ -215,7 +222,7 @@ export default class GameScene extends Phaser.Scene {
 			y,
 			this.gridSize * 0.8,
 			this.gridSize * 0.8,
-			0x3498db
+			Colors.towers.background
 		);
 		this.towers.push(tower);
 
@@ -236,7 +243,7 @@ export default class GameScene extends Phaser.Scene {
 		this.add
 			.text(x, y - this.gridSize / 2 - 5, `(${coordX},${coordY})`, {
 				fontSize: "8px",
-				color: "#ffffff",
+				color: `#${Colors.towers.label.toString(16).padStart(6, "0")}`,
 				fontFamily: "Arial",
 			})
 			.setOrigin(0.5);
