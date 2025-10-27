@@ -49,7 +49,7 @@ export class TowerComponent {
 		);
 
 		// Add border to tower
-		towerGameObject.setStrokeStyle(2, 0x0087cc); // 2px border with #0087CC color
+		towerGameObject.setStrokeStyle(2, Colors.towers.border); // 2px border with tower border color
 
 		// Calculate coordinate system position (center-based)
 		const originGridX = this.gridWidth / 2;

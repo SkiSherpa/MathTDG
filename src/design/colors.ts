@@ -26,6 +26,7 @@ export const Colors = {
 	// Towers
 	towers: {
 		background: 0x3498db, // Blue
+		border: 0x0087cc, // Bright blue border
 		label: 0xffffff, // White
 	},
 
