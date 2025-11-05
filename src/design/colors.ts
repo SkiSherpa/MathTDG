@@ -30,6 +30,14 @@ export const Colors = {
 		label: 0xffffff, // White
 	},
 
+	// Creep Towers
+	creepTowers: {
+		background: 0x8e44ad, // Purple
+		border: 0x6c3483, // Dark purple border
+		label: 0xffffff, // White
+		triangle: 0xe74c3c, // Red (placeholder creep color)
+	},
+
 	// UI Elements
 	ui: {
 		primary: 0xffffff, // White

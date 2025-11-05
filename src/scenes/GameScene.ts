@@ -4,6 +4,7 @@ import { CoordinateSystemComponent } from "../components/CoordinateSystemCompone
 import { OriginComponent } from "../components/OriginComponent";
 import { TowerComponent } from "../components/TowerComponent";
 import { UIComponent } from "../components/UIComponent";
+import { CreepTowerComponent } from "../components/CreepTowerComponent";
 
 export default class GameScene extends Phaser.Scene {
 	private gridSize: number = 32; // Size of each grid cell
@@ -16,6 +17,7 @@ export default class GameScene extends Phaser.Scene {
 	private originComponent!: OriginComponent;
 	private towerComponent!: TowerComponent;
 	private uiComponent!: UIComponent;
+	private creepTowerComponent!: CreepTowerComponent;
 
 	constructor() {
 		super({ key: "GameScene" });
@@ -36,6 +38,9 @@ export default class GameScene extends Phaser.Scene {
 		// Create the Origin (home base)
 		const originPosition = this.originComponent.createOrigin();
 		this.gridComponent.occupyCell(originPosition.gridX, originPosition.gridY);
+
+		// Create creep towers in a 22x22 ring around origin
+		this.creepTowerComponent.createCreepTowerRing(22, 1, 2);
 
 		// Add UI for game phase
 		this.uiComponent.createUI();
@@ -71,6 +76,15 @@ export default class GameScene extends Phaser.Scene {
 		);
 
 		this.towerComponent = new TowerComponent(
+			this,
+			this.gridSize,
+			this.gridWidth,
+			this.gridHeight,
+			this.gridComponent.getOffsetX(),
+			this.gridComponent.getOffsetY()
+		);
+
+		this.creepTowerComponent = new CreepTowerComponent(
 			this,
 			this.gridSize,
 			this.gridWidth,
