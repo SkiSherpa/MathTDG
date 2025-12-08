@@ -45,6 +45,12 @@ export default class GameScene extends Phaser.Scene {
 		this.gridComponent.occupyCell(originPosition.gridX, originPosition.gridY);
 
 		// Add UI for game phase and start button
+		this.uiComponent.setGridInfo(
+			this.gridComponent.getOffsetX(),
+			this.gridComponent.getOffsetY(),
+			this.gridSize,
+			this.gridWidth
+		);
 		this.uiComponent.createUI();
 		this.uiComponent.createStartButton(() => this.startNewGame());
 

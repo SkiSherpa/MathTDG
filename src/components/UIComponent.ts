@@ -8,28 +8,42 @@ export class UIComponent {
 	private turnText!: Phaser.GameObjects.Text;
 	private startButton!: Phaser.GameObjects.Container;
 	private currentPhase: GamePhase = "placement";
+	private gridOffsetX: number = 0;
+	private gridOffsetY: number = 0;
+	private gridSize: number = 32;
+	private gridWidth: number = 27;
 
 	constructor(scene: Phaser.Scene) {
 		this.scene = scene;
 	}
 
-	public createUI(): void {
-		// Phase indicator (top-left)
-		this.phaseText = this.scene.add.text(10, 10, "Phase: Placement", {
-			fontSize: "20px",
-			color: "#ffffff",
-			fontFamily: "Arial",
-			fontStyle: "bold",
-			backgroundColor: "#000000",
-			padding: { x: 10, y: 5 },
-		});
-		this.phaseText.setDepth(1000);
+	/**
+	 * Sets grid information for proper UI alignment
+	 * Call this before createUI() to position UI elements relative to the grid
+	 */
+	public setGridInfo(
+		offsetX: number,
+		offsetY: number,
+		gridSize: number,
+		gridWidth: number
+	): void {
+		this.gridOffsetX = offsetX;
+		this.gridOffsetY = offsetY;
+		this.gridSize = gridSize;
+		this.gridWidth = gridWidth;
+	}
 
-		// Turn counter (top-right) - initially hidden
-		this.turnText = this.scene.add.text(
-			this.scene.scale.width - 10,
+	public createUI(): void {
+		// Calculate the left edge and right edge of the game board
+		const boardLeftEdge = this.gridOffsetX;
+		const boardRightEdge = this.gridOffsetX + this.gridWidth * this.gridSize;
+
+		// Phase indicator - aligned with left edge of board
+		// setOrigin(0, 0) means the text's top-left corner is positioned at (x, y)
+		this.phaseText = this.scene.add.text(
+			boardLeftEdge,
 			10,
-			"Turn: 0/3",
+			"Phase: Placement",
 			{
 				fontSize: "20px",
 				color: "#ffffff",
@@ -39,7 +53,20 @@ export class UIComponent {
 				padding: { x: 10, y: 5 },
 			}
 		);
-		this.turnText.setOrigin(1, 0);
+		this.phaseText.setOrigin(0, 0); // Top-left corner of text at position
+		this.phaseText.setDepth(1000);
+
+		// Turn counter - aligned with right edge of board
+		// setOrigin(1, 0) means the text's top-right corner is positioned at (x, y)
+		this.turnText = this.scene.add.text(boardRightEdge, 10, "Turn: 0/3", {
+			fontSize: "20px",
+			color: "#ffffff",
+			fontFamily: "Arial",
+			fontStyle: "bold",
+			backgroundColor: "#000000",
+			padding: { x: 10, y: 5 },
+		});
+		this.turnText.setOrigin(1, 0); // Top-right corner of text at position
 		this.turnText.setDepth(1000);
 		this.turnText.setVisible(false); // Hidden until game starts
 	}
