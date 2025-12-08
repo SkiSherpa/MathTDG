@@ -73,9 +73,9 @@ export class UIComponent {
 
 	public createStartButton(onClickCallback: () => void): void {
 		const centerX = this.scene.scale.width / 2;
-		const centerY = this.scene.scale.height / 2;
+		const centerY = this.scene.scale.height / 10;
 
-		// Create container for button
+		// Create container for button - we manipulate here!
 		this.startButton = this.scene.add.container(centerX, centerY);
 
 		// Create button background
