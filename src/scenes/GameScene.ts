@@ -19,6 +19,11 @@ export default class GameScene extends Phaser.Scene {
 	private uiComponent!: UIComponent;
 	private creepTowerComponent!: CreepTowerComponent;
 
+	// Game state
+	private currentTurn: number = 0;
+	private maxTurns: number = 3;
+	private gameStarted: boolean = false;
+
 	constructor() {
 		super({ key: "GameScene" });
 	}
@@ -39,11 +44,9 @@ export default class GameScene extends Phaser.Scene {
 		const originPosition = this.originComponent.createOrigin();
 		this.gridComponent.occupyCell(originPosition.gridX, originPosition.gridY);
 
-		// Create creep towers in a 22x22 ring around origin
-		this.creepTowerComponent.createCreepTowerRing(22, 1, 2);
-
-		// Add UI for game phase
+		// Add UI for game phase and start button
 		this.uiComponent.createUI();
+		this.uiComponent.createStartButton(() => this.startNewGame());
 
 		// Add click handler for tower placement
 		this.input.on("pointerdown", this.onGridClick, this);
@@ -96,7 +99,84 @@ export default class GameScene extends Phaser.Scene {
 		this.uiComponent = new UIComponent(this);
 	}
 
+	private startNewGame(turns: number = 3) {
+		console.log(`Starting new game with ${turns} turns`);
+
+		// Reset game state
+		this.currentTurn = 0;
+		this.maxTurns = turns;
+		this.gameStarted = true;
+
+		// Clear existing creep towers
+		this.creepTowerComponent.clearAllCreepTowers();
+
+		// Place one random creep tower around the 22x22 square
+		this.placeRandomCreepTower();
+
+		// Update UI
+		this.uiComponent.updateTurnDisplay(this.currentTurn, this.maxTurns);
+	}
+
+	private placeRandomCreepTower() {
+		const squareSize = 22;
+		const halfSize = Math.floor(squareSize / 2);
+		const originGridX = Math.floor(this.gridWidth / 2);
+		const originGridY = Math.floor(this.gridHeight / 2);
+
+		// Calculate all possible positions around the square perimeter
+		const possiblePositions: { gridX: number; gridY: number }[] = [];
+
+		// Top edge
+		for (let x = -halfSize; x <= halfSize; x++) {
+			possiblePositions.push({
+				gridX: originGridX + x,
+				gridY: originGridY - halfSize,
+			});
+		}
+
+		// Bottom edge
+		for (let x = -halfSize; x <= halfSize; x++) {
+			possiblePositions.push({
+				gridX: originGridX + x,
+				gridY: originGridY + halfSize,
+			});
+		}
+
+		// Left edge (excluding corners)
+		for (let y = -halfSize + 1; y < halfSize; y++) {
+			possiblePositions.push({
+				gridX: originGridX - halfSize,
+				gridY: originGridY - y,
+			});
+		}
+
+		// Right edge (excluding corners)
+		for (let y = -halfSize + 1; y < halfSize; y++) {
+			possiblePositions.push({
+				gridX: originGridX + halfSize,
+				gridY: originGridY - y,
+			});
+		}
+
+		// Select a random position
+		const randomIndex = Math.floor(Math.random() * possiblePositions.length);
+		const position = possiblePositions[randomIndex];
+
+		// Place the creep tower with 1 creep, releasing in 2 turns
+		this.creepTowerComponent.placeCreepTower(
+			position.gridX,
+			position.gridY,
+			1,
+			2
+		);
+
+		console.log(
+			`Placed random creep tower at grid (${position.gridX}, ${position.gridY})`
+		);
+	}
+
 	private onGridClick(pointer: Phaser.Input.Pointer) {
+		if (!this.gameStarted) return;
 		if (this.uiComponent.getGamePhase() !== "placement") return;
 
 		// Account for grid offset when calculating grid position
