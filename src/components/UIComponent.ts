@@ -7,11 +7,13 @@ export class UIComponent {
 	private phaseText!: Phaser.GameObjects.Text;
 	private turnText!: Phaser.GameObjects.Text;
 	private startButton!: Phaser.GameObjects.Container;
+	private phaseSwitchButton!: Phaser.GameObjects.Container;
 	private currentPhase: GamePhase = "placement";
 	private gridOffsetX: number = 0;
 	private gridOffsetY: number = 0;
 	private gridSize: number = 32;
 	private gridWidth: number = 27;
+	private isFlashing: boolean = false;
 
 	constructor(scene: Phaser.Scene) {
 		this.scene = scene;
@@ -121,6 +123,60 @@ export class UIComponent {
 		this.startButton.setDepth(2000);
 	}
 
+	public createPhaseSwitchButton(onClickCallback: () => void): void {
+		// Position below the turn counter
+		// Turn counter is at boardRightEdge with origin(1, 0)
+		const boardRightEdge = this.gridOffsetX + this.gridWidth * this.gridSize;
+		const buttonX = boardRightEdge;
+		const buttonY = 70; // turnText Y (10) + turnText height (~30) + margin (10)
+
+		// Create container for button
+		this.phaseSwitchButton = this.scene.add.container(buttonX, buttonY);
+
+		// Create button background
+		const buttonWidth = 180;
+		const buttonHeight = 50;
+		const background = this.scene.add.rectangle(
+			0,
+			0,
+			buttonWidth,
+			buttonHeight,
+			0xff9800 // Orange color
+		);
+		background.setStrokeStyle(3, 0xe65100);
+		background.setInteractive({ useHandCursor: true });
+
+		// Create button text
+		const text = this.scene.add.text(0, 0, "Send Creeps", {
+			fontSize: "20px",
+			color: "#ffffff",
+			fontFamily: "Arial",
+			fontStyle: "bold",
+		});
+		text.setOrigin(0.5);
+
+		// Add hover effects
+		background.on("pointerover", () => {
+			background.setFillStyle(0xffa726);
+		});
+
+		background.on("pointerout", () => {
+			background.setFillStyle(0xff9800);
+		});
+
+		// Add click handler
+		background.on("pointerdown", () => {
+			if (!this.isFlashing) {
+				onClickCallback();
+			}
+		});
+
+		// Add elements to container
+		this.phaseSwitchButton.add([background, text]);
+		this.phaseSwitchButton.setDepth(2000);
+		this.phaseSwitchButton.setVisible(false); // Hidden until game starts
+	}
+
 	public updateTurnDisplay(currentTurn: number, maxTurns: number): void {
 		this.turnText.setText(`Turn: ${currentTurn}/${maxTurns}`);
 		this.turnText.setVisible(true);
@@ -136,8 +192,49 @@ export class UIComponent {
 		if (phase === "placement") {
 			this.phaseText.setBackgroundColor("#2196f3"); // Blue for placement
 		} else {
-			this.phaseText.setBackgroundColor("#f44336"); // Red for attack
+			// Attack phase - trigger flash effect
+			this.flashAttackPhase();
 		}
+	}
+
+	/**
+	 * Flashes the attack phase display red for 1 second
+	 * Returns a promise that resolves after the flash completes
+	 */
+	public flashAttackPhase(): Promise<void> {
+		return new Promise((resolve) => {
+			this.isFlashing = true;
+
+			// Set to red immediately
+			this.phaseText.setBackgroundColor("#f44336");
+
+			// Create a flashing effect by toggling between red shades
+			let flashCount = 0;
+			const maxFlashes = 6; // 6 flashes = 3 on/off cycles in 1 second
+			const flashInterval = 1000 / maxFlashes; // ~166ms per flash
+
+			const flashTimer = this.scene.time.addEvent({
+				delay: flashInterval,
+				callback: () => {
+					flashCount++;
+					// Toggle between bright red and dark red
+					if (flashCount % 2 === 0) {
+						this.phaseText.setBackgroundColor("#f44336"); // Bright red
+					} else {
+						this.phaseText.setBackgroundColor("#c62828"); // Dark red
+					}
+
+					if (flashCount >= maxFlashes) {
+						flashTimer.destroy();
+						// Keep red background after flashing
+						this.phaseText.setBackgroundColor("#f44336");
+						this.isFlashing = false;
+						resolve();
+					}
+				},
+				loop: true,
+			});
+		});
 	}
 
 	public getGamePhase(): GamePhase {
@@ -153,6 +250,18 @@ export class UIComponent {
 	public hideStartButton(): void {
 		if (this.startButton) {
 			this.startButton.setVisible(false);
+		}
+	}
+
+	public showPhaseSwitchButton(): void {
+		if (this.phaseSwitchButton) {
+			this.phaseSwitchButton.setVisible(true);
+		}
+	}
+
+	public hidePhaseSwitchButton(): void {
+		if (this.phaseSwitchButton) {
+			this.phaseSwitchButton.setVisible(false);
 		}
 	}
 }

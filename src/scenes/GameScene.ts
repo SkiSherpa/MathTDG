@@ -53,6 +53,7 @@ export default class GameScene extends Phaser.Scene {
 		);
 		this.uiComponent.createUI();
 		this.uiComponent.createStartButton(() => this.startNewGame());
+		this.uiComponent.createPhaseSwitchButton(() => this.switchToAttackPhase());
 
 		// Add click handler for tower placement
 		this.input.on("pointerdown", this.onGridClick, this);
@@ -121,6 +122,8 @@ export default class GameScene extends Phaser.Scene {
 
 		// Update UI
 		this.uiComponent.updateTurnDisplay(this.currentTurn, this.maxTurns);
+		this.uiComponent.setGamePhase("placement");
+		this.uiComponent.showPhaseSwitchButton();
 	}
 
 	private placeRandomCreepTower() {
@@ -179,6 +182,42 @@ export default class GameScene extends Phaser.Scene {
 		console.log(
 			`Placed random creep tower at grid (${position.gridX}, ${position.gridY})`
 		);
+	}
+
+	private async switchToAttackPhase() {
+		console.log("Switching to attack phase");
+
+		// Switch to attack phase
+		this.uiComponent.setGamePhase("attack");
+
+		// Hide the phase switch button during attack
+		this.uiComponent.hidePhaseSwitchButton();
+
+		// Wait for the flash to complete (1 second)
+		await this.uiComponent.flashAttackPhase();
+
+		// After flash, advance to next turn
+		this.advanceToNextTurn();
+	}
+
+	private advanceToNextTurn() {
+		this.currentTurn++;
+		console.log(`Advancing to turn ${this.currentTurn}`);
+
+		// Update turn display
+		this.uiComponent.updateTurnDisplay(this.currentTurn, this.maxTurns);
+
+		// Check if game is over
+		if (this.currentTurn >= this.maxTurns) {
+			console.log("Game Over!");
+			// TODO: Add game over logic here
+			this.uiComponent.hidePhaseSwitchButton();
+			return;
+		}
+
+		// Return to placement phase for the new turn
+		this.uiComponent.setGamePhase("placement");
+		this.uiComponent.showPhaseSwitchButton();
 	}
 
 	private onGridClick(pointer: Phaser.Input.Pointer) {
