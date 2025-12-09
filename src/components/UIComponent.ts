@@ -111,7 +111,7 @@ export class UIComponent {
 
 		// Add click handler
 		background.on("pointerdown", () => {
-			this.startButton.setVisible(false);
+			this.startButton.setVisible(true);
 			this.turnText.setVisible(true);
 			onClickCallback();
 		});
