@@ -58,6 +58,12 @@ export const Colors = {
 		action: 0xe74c3c, // Red
 		paused: 0xf39c12, // Orange
 	},
+
+	// Health Counter
+	healthCounter: {
+		healthNumber: 0xe74c3c, // Red
+		background: 0xffffff, // White
+	},
 } as const;
 
 // Type for color categories
