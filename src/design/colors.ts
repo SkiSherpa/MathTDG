@@ -61,8 +61,8 @@ export const Colors = {
 
 	// Health Counter
 	healthCounter: {
-		healthNumber: 0xe74c3c, // Red
-		background: 0xffffff, // White
+		healthNumber: 0xffffff, // White
+		background: 0xe74c3c, // Red
 	},
 } as const;
 

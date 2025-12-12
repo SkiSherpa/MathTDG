@@ -5,6 +5,7 @@ import { OriginComponent } from "../components/OriginComponent";
 import { TowerComponent } from "../components/TowerComponent";
 import { UIComponent } from "../components/UIComponent";
 import { CreepTowerComponent } from "../components/CreepTowerComponent";
+import { OriginHealthComponent } from "../components/OriginHealthComponent";
 
 export default class GameScene extends Phaser.Scene {
 	private gridSize: number = 32; // Size of each grid cell
@@ -18,6 +19,7 @@ export default class GameScene extends Phaser.Scene {
 	private towerComponent!: TowerComponent;
 	private uiComponent!: UIComponent;
 	private creepTowerComponent!: CreepTowerComponent;
+	private originHealthComponent!: OriginHealthComponent;
 
 	// Game state
 	private currentTurn: number = 0;
@@ -54,7 +56,12 @@ export default class GameScene extends Phaser.Scene {
 		this.uiComponent.createUI();
 		this.uiComponent.createStartButton(() => this.startNewGame());
 		this.uiComponent.createPhaseSwitchButton(() => this.switchToAttackPhase());
-
+		this.originHealthComponent.displayHealthCounter(
+			// display health coutner
+			this.gridComponent.getOffsetX(),
+			this.gridComponent.getOffsetY() + 50,
+			10
+		);
 		// Add click handler for tower placement
 		this.input.on("pointerdown", this.onGridClick, this);
 	}
@@ -101,6 +108,13 @@ export default class GameScene extends Phaser.Scene {
 			this.gridHeight,
 			this.gridComponent.getOffsetX(),
 			this.gridComponent.getOffsetY()
+		);
+
+		this.originHealthComponent = new OriginHealthComponent(
+			this, // ← The scene (required!)
+			0, // coorX - placeholder
+			0, // coorY - placeholder
+			10 // healthCount - starting health
 		);
 
 		this.uiComponent = new UIComponent(this);
