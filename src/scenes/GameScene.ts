@@ -30,6 +30,13 @@ export default class GameScene extends Phaser.Scene {
 		super({ key: "GameScene" });
 	}
 
+	preload() {
+		// Load the heart image before the scene starts
+		this.load.image("heartIcon", "/assets/heartIconWhite.png");
+		//              ↑         ↑
+		//              key       path to your image file
+	}
+
 	create() {
 		console.log("GameScene created!");
 

@@ -63,11 +63,11 @@ export class OriginHealthComponent {
 		);
 		// Add text,
 		const currentHealthCount = this.scene.add.text(
-			-45,
+			0,
 			-10,
 			healthCount.toString(),
 			{
-				fontSize: "12px",
+				fontSize: "18px",
 				color: `#${Colors.healthCounter.healthNumber
 					.toString(16)
 					.padStart(6, "0")}`,
@@ -75,8 +75,11 @@ export class OriginHealthComponent {
 				fontStyle: "bold",
 			}
 		);
+		// Add heart sprite
+		const heartIcon = this.scene.add.image(-15, 0, "heartIcon");
+		heartIcon.setScale(0.045);
 		// Add background and currentHealthCount to the container
-		container.add([background, currentHealthCount]);
+		container.add([background, currentHealthCount, heartIcon]);
 		/** This can be it's own test
 		 * Update the Health count
 		 */
