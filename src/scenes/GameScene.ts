@@ -131,7 +131,7 @@ export default class GameScene extends Phaser.Scene {
 		console.log(`Starting new game with ${turns} turns`);
 
 		// Reset game state
-		this.currentTurn = 0;
+		this.currentTurn = 1;
 		this.maxTurns = turns;
 		this.gameStarted = true;
 
@@ -196,8 +196,8 @@ export default class GameScene extends Phaser.Scene {
 		this.creepTowerComponent.placeCreepTower(
 			position.gridX,
 			position.gridY,
-			1,
-			2
+			1, // num of creeps to release
+			0 // turns to release
 		);
 
 		console.log(

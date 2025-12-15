@@ -51,7 +51,7 @@ export class CreepTowerComponent {
 		gridX: number,
 		gridY: number,
 		creepCount: number = 1,
-		turnsUntilRelease: number = 2
+		turnsUntilRelease: number = 0
 	): CreepTower | null {
 		// Calculate screen position
 		const x = this.offsetX + gridX * this.gridSize;
@@ -113,7 +113,12 @@ export class CreepTowerComponent {
 		turnsUntilReleaseText.setOrigin(1, 0);
 
 		// Add all elements to container
-		container.add([background, triangle, creepCountText, turnsUntilReleaseText]);
+		container.add([
+			background,
+			triangle,
+			creepCountText,
+			turnsUntilReleaseText,
+		]);
 
 		// Calculate coordinate system position
 		const originGridX = this.gridWidth / 2;
@@ -178,7 +183,7 @@ export class CreepTowerComponent {
 	public createCreepTowerRing(
 		squareSize: number = 22,
 		creepCount: number = 1,
-		turnsUntilRelease: number = 2
+		turnsUntilRelease: number = 0
 	): void {
 		const halfSize = Math.floor(squareSize / 2);
 		const originGridX = Math.floor(this.gridWidth / 2);
