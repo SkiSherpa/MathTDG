@@ -4,7 +4,7 @@ import { Colors } from "../design/colors";
 export interface CreepTower {
 	container: Phaser.GameObjects.Container;
 	background: Phaser.GameObjects.Rectangle;
-	triangle: Phaser.GameObjects.Triangle;
+	circle: Phaser.GameObjects.Arc;
 	creepCountText: Phaser.GameObjects.Text;
 	turnsUntilReleaseText: Phaser.GameObjects.Text;
 	gridX: number;
@@ -70,18 +70,13 @@ export class CreepTowerComponent {
 		);
 		background.setStrokeStyle(2, Colors.creepTowers.border);
 
-		// Create triangle placeholder (centered in the middle-bottom area)
-		const triangleSize = this.gridSize * 0.3; // 30% of grid size
-		const triangle = this.scene.add.triangle(
+		// Create circle placeholder (centered in the middle-bottom area)
+		const circleSize = this.gridSize * 0.3; // 30% of grid size
+		const circle = this.scene.add.circle(
 			0, // Center X
 			this.gridSize * 0.15, // Slightly below center
-			0,
-			-triangleSize / 2, // Top point
-			-triangleSize / 2,
-			triangleSize / 2, // Bottom left
-			triangleSize / 2,
-			triangleSize / 2, // Bottom right
-			Colors.creepTowers.triangle
+			6, // r = 6px
+			Colors.creepTowers.circle
 		);
 
 		// Create creep count text (top left)
@@ -113,12 +108,7 @@ export class CreepTowerComponent {
 		turnsUntilReleaseText.setOrigin(1, 0);
 
 		// Add all elements to container
-		container.add([
-			background,
-			triangle,
-			creepCountText,
-			turnsUntilReleaseText,
-		]);
+		container.add([background, circle, creepCountText, turnsUntilReleaseText]);
 
 		// Calculate coordinate system position
 		const originGridX = this.gridWidth / 2;
@@ -129,7 +119,7 @@ export class CreepTowerComponent {
 		const creepTower: CreepTower = {
 			container,
 			background,
-			triangle,
+			circle,
 			creepCountText,
 			turnsUntilReleaseText,
 			gridX,
