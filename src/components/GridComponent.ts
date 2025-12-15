@@ -6,7 +6,7 @@ export class GridComponent {
 	private gridSize: number;
 	private gridWidth: number;
 	private gridHeight: number;
-	private grid: boolean[][];
+	private grid!: boolean[][];
 	private offsetX: number = 0;
 	private offsetY: number = 0;
 
