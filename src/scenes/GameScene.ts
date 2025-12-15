@@ -6,6 +6,7 @@ import { TowerComponent } from "../components/TowerComponent";
 import { UIComponent } from "../components/UIComponent";
 import { CreepTowerComponent } from "../components/CreepTowerComponent";
 import { OriginHealthComponent } from "../components/OriginHealthComponent";
+import { CreepMovement } from "../components/CreepMovement";
 
 export default class GameScene extends Phaser.Scene {
 	private gridSize: number = 32; // Size of each grid cell
@@ -20,6 +21,7 @@ export default class GameScene extends Phaser.Scene {
 	private uiComponent!: UIComponent;
 	private creepTowerComponent!: CreepTowerComponent;
 	private originHealthComponent!: OriginHealthComponent;
+	private creepMovement!: CreepMovement;
 
 	// Game state
 	private currentTurn: number = 0;
@@ -124,6 +126,15 @@ export default class GameScene extends Phaser.Scene {
 			10 // healthCount - starting health
 		);
 
+		this.creepMovement = new CreepMovement(
+			this,
+			this.gridSize,
+			this.gridComponent.getOffsetX(),
+			this.gridComponent.getOffsetY(),
+			Math.floor(this.gridWidth / 2), // origin grid X
+			Math.floor(this.gridHeight / 2) // origin grid Y
+		);
+
 		this.uiComponent = new UIComponent(this);
 	}
 
@@ -210,14 +221,18 @@ export default class GameScene extends Phaser.Scene {
 
 		// Switch to attack phase
 		this.uiComponent.setGamePhase("attack");
-
-		// Hide the phase switch button during attack
 		this.uiComponent.hidePhaseSwitchButton();
+
+		// Spawn creeps from ready towers
+		this.spawnCreepsFromTowers();
 
 		// Wait for the flash to complete (1 second)
 		await this.uiComponent.flashAttackPhase();
 
-		// After flash, advance to next turn
+		// Move creeps towards origin
+		await this.moveCreepsToOrigin();
+
+		// After all movement, advance to next turn
 		this.advanceToNextTurn();
 	}
 
@@ -225,13 +240,18 @@ export default class GameScene extends Phaser.Scene {
 		this.currentTurn++;
 		console.log(`Advancing to turn ${this.currentTurn}`);
 
+		// Decrement turn counters for all creep towers
+		const towers = this.creepTowerComponent.getCreepTowers();
+		towers.forEach((tower) => {
+			this.creepTowerComponent.decrementTurnCounter(tower);
+		});
+
 		// Update turn display
 		this.uiComponent.updateTurnDisplay(this.currentTurn, this.maxTurns);
 
 		// Check if game is over
 		if (this.currentTurn >= this.maxTurns) {
 			console.log("Game Over!");
-			// TODO: Add game over logic here
 			this.uiComponent.hidePhaseSwitchButton();
 			return;
 		}
@@ -258,6 +278,48 @@ export default class GameScene extends Phaser.Scene {
 				this.gridComponent.occupyCell(gridX, gridY);
 			}
 		}
+	}
+	/**
+	 * Spawns creeps from all towers that are ready to release
+	 */
+	private spawnCreepsFromTowers(): void {
+		const towers = this.creepTowerComponent.getCreepTowers();
+
+		towers.forEach((tower) => {
+			if (this.creepTowerComponent.isReadyToRelease(tower)) {
+				// Spawn the number of creeps indicated by creepCount
+				for (let i = 0; i < tower.creepCount; i++) {
+					this.creepMovement.spawnCreep(tower.gridX, tower.gridY);
+				}
+				console.log(
+					`Spawned ${tower.creepCount} creeps from tower at (${tower.gridX}, ${tower.gridY})`
+				);
+			}
+		});
+	}
+
+	/**
+	 * Moves all creeps towards the origin until they reach it
+	 * Returns a promise that resolves when all creeps have finished moving
+	 */
+	private moveCreepsToOrigin(): Promise<void> {
+		return new Promise((resolve) => {
+			// Move creeps one step at a time
+			const moveInterval = this.time.addEvent({
+				delay: 400, // 400ms between steps (gives 300ms animation + 100ms pause)
+				callback: () => {
+					// Move all creeps one step
+					this.creepMovement.moveAllCreeps();
+
+					// Check if any creeps are left
+					if (this.creepMovement.getCreepCount() === 0) {
+						moveInterval.destroy();
+						resolve();
+					}
+				},
+				loop: true,
+			});
+		});
 	}
 
 	update() {
