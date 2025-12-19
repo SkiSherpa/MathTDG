@@ -18,6 +18,7 @@ export class CreepMovement {
 	private creeps: Creep[] = [];
 	private originGridX: number;
 	private originGridY: number;
+	private onCreepReachedOrigin?: () => void;
 
 	constructor(
 		scene: Phaser.Scene,
@@ -25,7 +26,8 @@ export class CreepMovement {
 		offsetX: number,
 		offsetY: number,
 		originGridX: number,
-		originGridY: number
+		originGridY: number,
+		onCreepReachedOrigin?: () => void // Add callback
 	) {
 		this.scene = scene;
 		this.gridSize = gridSize;
@@ -33,6 +35,7 @@ export class CreepMovement {
 		this.offsetY = offsetY;
 		this.originGridX = originGridX;
 		this.originGridY = originGridY;
+		this.onCreepReachedOrigin = onCreepReachedOrigin;
 	}
 
 	/**
@@ -109,7 +112,11 @@ export class CreepMovement {
 		if (!nextStep) {
 			// Creep has reached origin
 			this.removeCreep(creep);
-			// TODO: Trigger damage to origin here
+
+			if (this.onCreepReachedOrigin) {
+				this.onCreepReachedOrigin();
+			}
+
 			console.log("Creep reached origin!");
 			return;
 		}

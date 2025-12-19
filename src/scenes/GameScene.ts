@@ -132,7 +132,8 @@ export default class GameScene extends Phaser.Scene {
 			this.gridComponent.getOffsetX(),
 			this.gridComponent.getOffsetY(),
 			Math.floor(this.gridWidth / 2), // origin grid X
-			Math.floor(this.gridHeight / 2) // origin grid Y
+			Math.floor(this.gridHeight / 2), // origin grid Y
+			() => this.originHealthComponent.decrementHealth(1) // ← Callback!
 		);
 
 		this.uiComponent = new UIComponent(this);
@@ -145,6 +146,7 @@ export default class GameScene extends Phaser.Scene {
 		this.currentTurn = 1;
 		this.maxTurns = turns;
 		this.gameStarted = true;
+		this.originHealthComponent.setHealth(10); // Reset Health to 10
 
 		// Clear existing creep towers
 		this.creepTowerComponent.clearAllCreepTowers();
@@ -207,7 +209,7 @@ export default class GameScene extends Phaser.Scene {
 		this.creepTowerComponent.placeCreepTower(
 			position.gridX,
 			position.gridY,
-			1, // num of creeps to release
+			3, // num of creeps to release
 			0 // turns to release
 		);
 

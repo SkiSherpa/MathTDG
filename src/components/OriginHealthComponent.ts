@@ -19,6 +19,7 @@ export class OriginHealthComponent {
 	private coorX: number;
 	private coorY: number;
 	private healthCount: number;
+	private healthCounterText?: Phaser.GameObjects.Text; // Store reference to text
 
 	constructor(
 		scene: Phaser.Scene,
@@ -30,6 +31,43 @@ export class OriginHealthComponent {
 		this.coorX = coorX;
 		this.coorY = coorY;
 		this.healthCount = healthCount;
+	}
+
+	/**
+	 * Decreases health by the specified amount
+	 */
+	public decrementHealth(amount: number = 1): void {
+		this.healthCount -= amount;
+
+		// Update the display text if it exists
+		if (this.healthCounterText) {
+			this.healthCounterText.setText(`Health: ${this.healthCount}`);
+		}
+
+		console.log(`Origin health: ${this.healthCount}`);
+
+		// Check if health reached zero
+		if (this.healthCount <= 0) {
+			console.log("Origin destroyed! Game Over!");
+			// TODO: Trigger game over
+		}
+	}
+
+	/**
+	 * Gets the current health value
+	 */
+	public getHealth(): number {
+		return this.healthCount;
+	}
+
+	/**
+	 * Sets health to a specific value
+	 */
+	public setHealth(value: number): void {
+		this.healthCount = value;
+		if (this.healthCounterText) {
+			this.healthCounterText.setText(`Health: ${this.healthCount}`);
+		}
 	}
 
 	/**
@@ -62,19 +100,16 @@ export class OriginHealthComponent {
 			1 // opacity
 		);
 		// Add text,
-		const currentHealthCount = this.scene.add.text(
-			0,
-			-10,
-			healthCount.toString(),
-			{
-				fontSize: "18px",
-				color: `#${Colors.healthCounter.healthNumber
-					.toString(16)
-					.padStart(6, "0")}`,
-				fontFamily: "Arial",
-				fontStyle: "bold",
-			}
-		);
+		const currentHealthCount = this.scene.add.text(0, -10, `${healthCount}`, {
+			fontSize: "18px",
+			color: `#${Colors.healthCounter.healthNumber
+				.toString(16)
+				.padStart(6, "0")}`,
+			fontFamily: "Arial",
+			fontStyle: "bold",
+		});
+		// store reference to healthCount
+		this.healthCounterText = currentHealthCount;
 		// Add heart sprite
 		const heartIcon = this.scene.add.image(-15, 0, "heartIcon");
 		heartIcon.setScale(0.045);
