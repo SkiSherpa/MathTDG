@@ -225,14 +225,10 @@ export default class GameScene extends Phaser.Scene {
 		this.uiComponent.setGamePhase("attack");
 		this.uiComponent.hidePhaseSwitchButton();
 
-		// Spawn creeps from ready towers
-		this.spawnCreepsFromTowers();
-
-		// Wait for the flash to complete (1 second)
 		await this.uiComponent.flashAttackPhase();
 
-		// Move creeps towards origin
-		await this.moveCreepsToOrigin();
+		// Start unified spawn + movement loop
+		await this.spawnAndMoveCreeps();
 
 		// After all movement, advance to next turn
 		this.advanceToNextTurn();
@@ -282,40 +278,50 @@ export default class GameScene extends Phaser.Scene {
 		}
 	}
 	/**
-	 * Spawns creeps from all towers that are ready to release
+	 * Spawns creeps one at a time AND moves all existing creeps
+	 * Both happen on the same 400ms interval
 	 */
-	private spawnCreepsFromTowers(): void {
-		const towers = this.creepTowerComponent.getCreepTowers();
-
-		towers.forEach((tower) => {
-			if (this.creepTowerComponent.isReadyToRelease(tower)) {
-				// Spawn the number of creeps indicated by creepCount
-				for (let i = 0; i < tower.creepCount; i++) {
-					this.creepMovement.spawnCreep(tower.gridX, tower.gridY);
-				}
-				console.log(
-					`Spawned ${tower.creepCount} creeps from tower at (${tower.gridX}, ${tower.gridY})`
-				);
-			}
-		});
-	}
-
-	/**
-	 * Moves all creeps towards the origin until they reach it
-	 * Returns a promise that resolves when all creeps have finished moving
-	 */
-	private moveCreepsToOrigin(): Promise<void> {
+	private spawnAndMoveCreeps(): Promise<void> {
 		return new Promise((resolve) => {
-			// Move creeps one step at a time
-			const moveInterval = this.time.addEvent({
-				delay: 400, // 400ms between steps (gives 300ms animation + 100ms pause)
+			const towers = this.creepTowerComponent.getCreepTowers();
+
+			// Build a queue of creeps to spawn
+			const spawnQueue: { gridX: number; gridY: number }[] = [];
+
+			towers.forEach((tower) => {
+				if (this.creepTowerComponent.isReadyToRelease(tower)) {
+					for (let i = 0; i < tower.creepCount; i++) {
+						spawnQueue.push({
+							gridX: tower.gridX,
+							gridY: tower.gridY,
+						});
+					}
+				}
+			});
+
+			console.log(`Total creeps to spawn: ${spawnQueue.length}`);
+
+			// Create interval that handles BOTH spawning and movement
+			const gameInterval = this.time.addEvent({
+				delay: 400,
 				callback: () => {
-					// Move all creeps one step
+					// 1. Spawn one creep (if any left in queue)
+					if (spawnQueue.length > 0) {
+						const spawn = spawnQueue.shift()!;
+						this.creepMovement.spawnCreep(spawn.gridX, spawn.gridY);
+						console.log(`Spawned creep, ${spawnQueue.length} remaining`);
+					}
+
+					// 2. Move all existing creeps
 					this.creepMovement.moveAllCreeps();
 
-					// Check if any creeps are left
-					if (this.creepMovement.getCreepCount() === 0) {
-						moveInterval.destroy();
+					// 3. Check if done (no more to spawn AND no creeps left)
+					if (
+						spawnQueue.length === 0 &&
+						this.creepMovement.getCreepCount() === 0
+					) {
+						gameInterval.destroy();
+						console.log("All creeps spawned and reached origin");
 						resolve();
 					}
 				},
