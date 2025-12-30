@@ -7,6 +7,7 @@ import { UIComponent } from "../components/UIComponent";
 import { CreepTowerComponent } from "../components/CreepTowerComponent";
 import { OriginHealthComponent } from "../components/OriginHealthComponent";
 import { CreepMovement } from "../components/CreepMovement";
+import { GAME_CONFIG } from "../config/gameConfig";
 
 export default class GameScene extends Phaser.Scene {
 	private gridSize: number = 32; // Size of each grid cell
@@ -25,7 +26,7 @@ export default class GameScene extends Phaser.Scene {
 
 	// Game state
 	private currentTurn: number = 0;
-	private maxTurns: number = 3;
+	private maxTurns: number = GAME_CONFIG.MAX_TURNS;
 	private gameStarted: boolean = false;
 
 	constructor() {
@@ -146,7 +147,7 @@ export default class GameScene extends Phaser.Scene {
 		this.currentTurn = 1;
 		this.maxTurns = turns;
 		this.gameStarted = true;
-		this.originHealthComponent.setHealth(10); // Reset Health to 10
+		this.originHealthComponent.setHealth(GAME_CONFIG.STARTING_HEALTH); // Reset Health to 10
 
 		// Clear existing creep towers
 		this.creepTowerComponent.clearAllCreepTowers();
@@ -209,8 +210,8 @@ export default class GameScene extends Phaser.Scene {
 		this.creepTowerComponent.placeCreepTower(
 			position.gridX,
 			position.gridY,
-			3, // num of creeps to release
-			0 // turns to release
+			GAME_CONFIG.CREEPS_PER_TOWER,
+			GAME_CONFIG.TURNS_UNTIL_RELEASE
 		);
 
 		console.log(
