@@ -15,7 +15,7 @@ export class CoordinateSystemComponent {
 		gridWidth: number,
 		gridHeight: number,
 		offsetX: number = 0,
-		offsetY: number = 0
+		offsetY: number = 0,
 	) {
 		this.scene = scene;
 		this.gridSize = gridSize;
@@ -46,7 +46,7 @@ export class CoordinateSystemComponent {
 		axesGraphics.moveTo(originX, this.offsetY);
 		axesGraphics.lineTo(
 			originX,
-			this.offsetY + this.gridHeight * this.gridSize
+			this.offsetY + this.gridHeight * this.gridSize,
 		);
 
 		axesGraphics.strokePath();
@@ -75,7 +75,7 @@ export class CoordinateSystemComponent {
 				fontSize: "16px",
 				color: `#${Colors.axes.xAxis.toString(16).padStart(6, "0")}`,
 				fontFamily: "Arial",
-			}
+			},
 		);
 	}
 
@@ -84,8 +84,8 @@ export class CoordinateSystemComponent {
 		const centerGridX = Math.floor(this.gridWidth / 2);
 		const centerGridY = Math.floor(this.gridHeight / 2);
 
-		// Create symmetrical X-axis labels
-		const xLabels = [-12, -9, -6, -3, 3, 6, 9, 12]; // Symmetrical around 0
+		// Create symmetrical X-axis labels for -10 to 10 grid
+		const xLabels = [-10, -8, -6, -4, -2, 2, 4, 6, 8, 10]; // Symmetrical around 0
 		for (const coordX of xLabels) {
 			const gridX = centerGridX + coordX;
 			if (gridX >= 0 && gridX <= this.gridWidth) {
@@ -103,7 +103,7 @@ export class CoordinateSystemComponent {
 		}
 
 		// Add coordinate numbers along Y-axis (symmetrical around origin)
-		const yLabels = [-12, -9, -6, -3, 3, 6, 9, 12]; // Symmetrical around 0
+		const yLabels = [-10, -8, -6, -4, -2, 2, 4, 6, 8, 10]; // Symmetrical around 0
 		for (const coordY of yLabels) {
 			const gridY = centerGridY - coordY; // Y-axis is inverted
 			if (gridY >= 0 && gridY <= this.gridHeight) {

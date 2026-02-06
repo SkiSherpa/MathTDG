@@ -11,8 +11,8 @@ import { GAME_CONFIG } from "../config/gameConfig";
 
 export default class GameScene extends Phaser.Scene {
 	private gridSize: number = 32; // Size of each grid cell
-	private gridWidth: number = 27; // Number of grid cells horizontally (-13 to 13)
-	private gridHeight: number = 27; // Number of grid cells vertically (-13 to 13)
+	private gridWidth: number = 21; // Number of grid cells horizontally (-10 to 10)
+	private gridHeight: number = 21; // Number of grid cells vertically (-10 to 10)
 
 	// Components
 	private gridComponent!: GridComponent;
@@ -61,7 +61,7 @@ export default class GameScene extends Phaser.Scene {
 			this.gridComponent.getOffsetX(),
 			this.gridComponent.getOffsetY(),
 			this.gridSize,
-			this.gridWidth
+			this.gridWidth,
 		);
 		this.uiComponent.createUI();
 		this.uiComponent.createStartButton(() => this.startNewGame());
@@ -70,7 +70,7 @@ export default class GameScene extends Phaser.Scene {
 			// display health coutner
 			this.gridComponent.getOffsetX(),
 			this.gridComponent.getOffsetY() + 50,
-			10
+			10,
 		);
 		// Add click handler for tower placement
 		this.input.on("pointerdown", this.onGridClick, this);
@@ -81,7 +81,7 @@ export default class GameScene extends Phaser.Scene {
 			this,
 			this.gridSize,
 			this.gridWidth,
-			this.gridHeight
+			this.gridHeight,
 		);
 
 		this.coordinateSystemComponent = new CoordinateSystemComponent(
@@ -90,7 +90,7 @@ export default class GameScene extends Phaser.Scene {
 			this.gridWidth,
 			this.gridHeight,
 			this.gridComponent.getOffsetX(),
-			this.gridComponent.getOffsetY()
+			this.gridComponent.getOffsetY(),
 		);
 
 		this.originComponent = new OriginComponent(
@@ -99,7 +99,7 @@ export default class GameScene extends Phaser.Scene {
 			this.gridWidth,
 			this.gridHeight,
 			this.gridComponent.getOffsetX(),
-			this.gridComponent.getOffsetY()
+			this.gridComponent.getOffsetY(),
 		);
 
 		this.towerComponent = new TowerComponent(
@@ -108,7 +108,7 @@ export default class GameScene extends Phaser.Scene {
 			this.gridWidth,
 			this.gridHeight,
 			this.gridComponent.getOffsetX(),
-			this.gridComponent.getOffsetY()
+			this.gridComponent.getOffsetY(),
 		);
 
 		this.creepTowerComponent = new CreepTowerComponent(
@@ -117,14 +117,14 @@ export default class GameScene extends Phaser.Scene {
 			this.gridWidth,
 			this.gridHeight,
 			this.gridComponent.getOffsetX(),
-			this.gridComponent.getOffsetY()
+			this.gridComponent.getOffsetY(),
 		);
 
 		this.originHealthComponent = new OriginHealthComponent(
 			this, // ← The scene (required!)
 			0, // coorX - placeholder
 			0, // coorY - placeholder
-			10 // healthCount - starting health
+			10, // healthCount - starting health
 		);
 
 		this.creepMovement = new CreepMovement(
@@ -134,7 +134,7 @@ export default class GameScene extends Phaser.Scene {
 			this.gridComponent.getOffsetY(),
 			Math.floor(this.gridWidth / 2), // origin grid X
 			Math.floor(this.gridHeight / 2), // origin grid Y
-			() => this.originHealthComponent.decrementHealth(1) // ← Callback!
+			() => this.originHealthComponent.decrementHealth(1), // ← Callback!
 		);
 
 		this.uiComponent = new UIComponent(this);
@@ -152,7 +152,7 @@ export default class GameScene extends Phaser.Scene {
 		// Clear existing creep towers
 		this.creepTowerComponent.clearAllCreepTowers();
 
-		// Place one random creep tower around the 22x22 square
+		// Place one random creep tower at distance 10 from origin
 		this.placeRandomCreepTower();
 
 		// Update UI
@@ -162,42 +162,42 @@ export default class GameScene extends Phaser.Scene {
 	}
 
 	private placeRandomCreepTower() {
-		const squareSize = 22;
-		const halfSize = Math.floor(squareSize / 2);
+		// Creep towers spawn at distance 10 from origin (on the outer edge of 21x21 grid)
+		const distance = 10; // Distance from origin to spawn creeps
 		const originGridX = Math.floor(this.gridWidth / 2);
 		const originGridY = Math.floor(this.gridHeight / 2);
 
-		// Calculate all possible positions around the square perimeter
+		// Calculate all possible positions around the square perimeter at distance 10
 		const possiblePositions: { gridX: number; gridY: number }[] = [];
 
-		// Top edge
-		for (let x = -halfSize; x <= halfSize; x++) {
+		// Top edge (y = -10, x from -10 to 10)
+		for (let x = -distance; x <= distance; x++) {
 			possiblePositions.push({
 				gridX: originGridX + x,
-				gridY: originGridY - halfSize,
+				gridY: originGridY - distance,
 			});
 		}
 
-		// Bottom edge
-		for (let x = -halfSize; x <= halfSize; x++) {
+		// Bottom edge (y = 10, x from -10 to 10)
+		for (let x = -distance; x <= distance; x++) {
 			possiblePositions.push({
 				gridX: originGridX + x,
-				gridY: originGridY + halfSize,
+				gridY: originGridY + distance,
 			});
 		}
 
-		// Left edge (excluding corners)
-		for (let y = -halfSize + 1; y < halfSize; y++) {
+		// Left edge (x = -10, y from -9 to 9, excluding corners)
+		for (let y = -distance + 1; y < distance; y++) {
 			possiblePositions.push({
-				gridX: originGridX - halfSize,
+				gridX: originGridX - distance,
 				gridY: originGridY - y,
 			});
 		}
 
-		// Right edge (excluding corners)
-		for (let y = -halfSize + 1; y < halfSize; y++) {
+		// Right edge (x = 10, y from -9 to 9, excluding corners)
+		for (let y = -distance + 1; y < distance; y++) {
 			possiblePositions.push({
-				gridX: originGridX + halfSize,
+				gridX: originGridX + distance,
 				gridY: originGridY - y,
 			});
 		}
@@ -206,16 +206,16 @@ export default class GameScene extends Phaser.Scene {
 		const randomIndex = Math.floor(Math.random() * possiblePositions.length);
 		const position = possiblePositions[randomIndex];
 
-		// Place the creep tower with 1 creep, releasing in 2 turns
+		// Place the creep tower with configured creep count and release turns
 		this.creepTowerComponent.placeCreepTower(
 			position.gridX,
 			position.gridY,
 			GAME_CONFIG.CREEPS_PER_TOWER,
-			GAME_CONFIG.TURNS_UNTIL_RELEASE
+			GAME_CONFIG.TURNS_UNTIL_RELEASE,
 		);
 
 		console.log(
-			`Placed random creep tower at grid (${position.gridX}, ${position.gridY})`
+			`Placed random creep tower at grid (${position.gridX}, ${position.gridY})`,
 		);
 	}
 

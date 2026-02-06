@@ -12,8 +12,11 @@ export class UIComponent {
 	private gridOffsetX: number = 0;
 	private gridOffsetY: number = 0;
 	private gridSize: number = 32;
-	private gridWidth: number = 27;
+	private gridWidth: number = 21;
 	private isFlashing: boolean = false;
+
+	// Fixed UI width (based on original 27x27 grid = 864px)
+	private readonly UI_WIDTH: number = 864;
 
 	constructor(scene: Phaser.Scene) {
 		this.scene = scene;
@@ -27,7 +30,7 @@ export class UIComponent {
 		offsetX: number,
 		offsetY: number,
 		gridSize: number,
-		gridWidth: number
+		gridWidth: number,
 	): void {
 		this.gridOffsetX = offsetX;
 		this.gridOffsetY = offsetY;
@@ -36,31 +39,27 @@ export class UIComponent {
 	}
 
 	public createUI(): void {
-		// Calculate the left edge and right edge of the game board
-		const boardLeftEdge = this.gridOffsetX;
-		const boardRightEdge = this.gridOffsetX + this.gridWidth * this.gridSize;
+		// Calculate UI boundaries based on fixed width, centered on screen
+		const centerX = this.scene.scale.width / 2;
+		const uiLeftEdge = centerX - this.UI_WIDTH / 2;
+		const uiRightEdge = centerX + this.UI_WIDTH / 2;
 
-		// Phase indicator - aligned with left edge of board
+		// Phase indicator - aligned with left edge of UI area
 		// setOrigin(0, 0) means the text's top-left corner is positioned at (x, y)
-		this.phaseText = this.scene.add.text(
-			boardLeftEdge,
-			10,
-			"Phase: Placement",
-			{
-				fontSize: "20px",
-				color: "#ffffff",
-				fontFamily: "Arial",
-				fontStyle: "bold",
-				backgroundColor: "#000000",
-				padding: { x: 10, y: 5 },
-			}
-		);
+		this.phaseText = this.scene.add.text(uiLeftEdge, 10, "Phase: Placement", {
+			fontSize: "20px",
+			color: "#ffffff",
+			fontFamily: "Arial",
+			fontStyle: "bold",
+			backgroundColor: "#000000",
+			padding: { x: 10, y: 5 },
+		});
 		this.phaseText.setOrigin(0, 0); // Top-left corner of text at position
 		this.phaseText.setDepth(1000);
 
-		// Turn counter - aligned with right edge of board
+		// Turn counter - aligned with right edge of UI area
 		// setOrigin(1, 0) means the text's top-right corner is positioned at (x, y)
-		this.turnText = this.scene.add.text(boardRightEdge, 10, "Turn: 0/3", {
+		this.turnText = this.scene.add.text(uiRightEdge, 10, "Turn: 0/3", {
 			fontSize: "20px",
 			color: "#ffffff",
 			fontFamily: "Arial",
@@ -88,7 +87,7 @@ export class UIComponent {
 			0,
 			buttonWidth,
 			buttonHeight,
-			0x4caf50
+			0x4caf50,
 		);
 		background.setStrokeStyle(3, 0x2e7d32);
 		background.setInteractive({ useHandCursor: true });
@@ -124,10 +123,10 @@ export class UIComponent {
 	}
 
 	public createPhaseSwitchButton(onClickCallback: () => void): void {
-		// Position below the turn counter
-		// Turn counter is at boardRightEdge with origin(1, 0)
-		const boardRightEdge = this.gridOffsetX + this.gridWidth * this.gridSize;
-		const buttonX = boardRightEdge;
+		// Position below the turn counter using fixed UI width
+		const centerX = this.scene.scale.width / 2;
+		const uiRightEdge = centerX + this.UI_WIDTH / 2;
+		const buttonX = uiRightEdge;
 		const buttonY = 70; // turnText Y (10) + turnText height (~30) + margin (10)
 
 		// Create container for button
@@ -141,7 +140,7 @@ export class UIComponent {
 			0,
 			buttonWidth,
 			buttonHeight,
-			0xff9800 // Orange color
+			0xff9800, // Orange color
 		);
 		background.setStrokeStyle(3, 0xe65100);
 		background.setInteractive({ useHandCursor: true });

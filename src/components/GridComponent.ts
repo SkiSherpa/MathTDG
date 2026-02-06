@@ -14,7 +14,7 @@ export class GridComponent {
 		scene: Phaser.Scene,
 		gridSize: number,
 		gridWidth: number,
-		gridHeight: number
+		gridHeight: number,
 	) {
 		this.scene = scene;
 		this.gridSize = gridSize;
@@ -25,14 +25,18 @@ export class GridComponent {
 	}
 
 	private calculateCenterOffset() {
-		// Center the grid on the canvas
+		// Center the grid horizontally, but position it higher vertically
 		const canvasWidth = this.scene.scale.width;
 		const canvasHeight = this.scene.scale.height;
 		const gridWidth = this.gridWidth * this.gridSize;
 		const gridHeight = this.gridHeight * this.gridSize;
 
+		// Center horizontally
 		this.offsetX = (canvasWidth - gridWidth) / 2;
-		this.offsetY = (canvasHeight - gridHeight) / 2;
+
+		// Position vertically: leave space at top for Start button (approx 100px)
+		// Then add a small margin (20px) below the button
+		this.offsetY = 180; // Start button area + margin
 	}
 
 	private initializeGrid() {
