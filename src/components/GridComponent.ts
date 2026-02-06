@@ -32,11 +32,11 @@ export class GridComponent {
 		const gridHeight = this.gridHeight * this.gridSize;
 
 		// Center horizontally
-		this.offsetX = (canvasWidth - gridWidth) / 2;
+		this.offsetX = 30;
 
 		// Position vertically: leave space at top for Start button (approx 100px)
 		// Then add a small margin (20px) below the button
-		this.offsetY = 180; // Start button area + margin
+		this.offsetY = 200; // Start button area + margin
 	}
 
 	private initializeGrid() {
