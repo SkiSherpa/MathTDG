@@ -31,7 +31,7 @@ export class GridComponent {
 		const gridWidth = this.gridWidth * this.gridSize;
 		const gridHeight = this.gridHeight * this.gridSize;
 
-		// Center horizontally
+		// position to left side of the board
 		this.offsetX = 30;
 
 		// Position vertically: leave space at top for Start button (approx 100px)
