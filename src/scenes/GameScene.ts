@@ -7,6 +7,7 @@ import { UIComponent } from "../components/UIComponent";
 import { CreepTowerComponent } from "../components/CreepTowerComponent";
 import { OriginHealthComponent } from "../components/OriginHealthComponent";
 import { CreepMovement } from "../components/CreepMovement";
+import { TowerPlacementComponent, EquationResult } from "../components/TowerPlacementComponent";
 import { GAME_CONFIG } from "../config/gameConfig";
 
 export default class GameScene extends Phaser.Scene {
@@ -23,6 +24,7 @@ export default class GameScene extends Phaser.Scene {
 	private creepTowerComponent!: CreepTowerComponent;
 	private originHealthComponent!: OriginHealthComponent;
 	private creepMovement!: CreepMovement;
+	private towerPlacement!: TowerPlacementComponent;
 
 	// Game state
 	private currentTurn: number = 0;
@@ -138,6 +140,15 @@ export default class GameScene extends Phaser.Scene {
 		);
 
 		this.uiComponent = new UIComponent(this);
+
+		// Placed to the right of the grid; grid right edge ≈ 30 + 21*32 = 702
+		this.towerPlacement = new TowerPlacementComponent(
+			this,
+			730,
+			200,
+			(equations) => this.onPlacementSubmit(equations),
+		);
+		this.towerPlacement.hide();
 	}
 
 	private startNewGame(turns: number = 3) {
@@ -159,6 +170,8 @@ export default class GameScene extends Phaser.Scene {
 		this.uiComponent.updateTurnDisplay(this.currentTurn, this.maxTurns);
 		this.uiComponent.setGamePhase("placement");
 		this.uiComponent.showPhaseSwitchButton();
+		this.towerPlacement.reset();
+		this.towerPlacement.show();
 	}
 
 	private placeRandomCreepTower() {
@@ -225,6 +238,7 @@ export default class GameScene extends Phaser.Scene {
 		// Switch to attack phase
 		this.uiComponent.setGamePhase("attack");
 		this.uiComponent.hidePhaseSwitchButton();
+		this.towerPlacement.hide();
 
 		await this.uiComponent.flashAttackPhase();
 
@@ -258,6 +272,39 @@ export default class GameScene extends Phaser.Scene {
 		// Return to placement phase for the new turn
 		this.uiComponent.setGamePhase("placement");
 		this.uiComponent.showPhaseSwitchButton();
+		this.towerPlacement.reset();
+		this.towerPlacement.show();
+	}
+
+	/**
+	 * Called when the player presses "Place Towers" in the placement panel.
+	 * Each modified equation y = mx + b places a tower at the y-intercept: coordinate (0, b).
+	 * Coordinate (0, b) maps to grid cell (originGridX, originGridY - b).
+	 */
+	private onPlacementSubmit(equations: EquationResult[]) {
+		const originGridX = Math.floor(this.gridWidth / 2);
+		const originGridY = Math.floor(this.gridHeight / 2);
+
+		for (const eq of equations) {
+			if (!eq.modified) continue;
+
+			const gridX = originGridX;          // x-coord 0 → center column
+			const gridY = originGridY - eq.b;   // y-intercept b → row above/below origin
+
+			if (this.gridComponent.isValidPosition(gridX, gridY)) {
+				const tower = this.towerComponent.placeTower(gridX, gridY);
+				if (tower) {
+					this.gridComponent.occupyCell(gridX, gridY);
+					console.log(
+						`Placed tower at grid (${gridX}, ${gridY}) from y = ${eq.m}x + ${eq.b}`,
+					);
+				}
+			} else {
+				console.log(
+					`Could not place tower at grid (${gridX}, ${gridY}) — cell occupied or out of bounds`,
+				);
+			}
+		}
 	}
 
 	private onGridClick(pointer: Phaser.Input.Pointer) {
