@@ -100,6 +100,10 @@ export class GridComponent {
 		return this.grid;
 	}
 
+	public reset() {
+		this.initializeGrid();
+	}
+
 	public getOffsetX(): number {
 		return this.offsetX;
 	}
