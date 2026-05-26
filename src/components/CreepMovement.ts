@@ -19,6 +19,8 @@ export class CreepMovement {
 	private originGridX: number;
 	private originGridY: number;
 	private onCreepReachedOrigin?: () => void;
+	// Returns true if the creep should be killed (e.g. crossed a laser line)
+	private onCreepStep?: (fromGridX: number, fromGridY: number, toGridX: number, toGridY: number) => boolean;
 
 	constructor(
 		scene: Phaser.Scene,
@@ -27,7 +29,8 @@ export class CreepMovement {
 		offsetY: number,
 		originGridX: number,
 		originGridY: number,
-		onCreepReachedOrigin?: () => void // Add callback
+		onCreepReachedOrigin?: () => void,
+		onCreepStep?: (fromGridX: number, fromGridY: number, toGridX: number, toGridY: number) => boolean,
 	) {
 		this.scene = scene;
 		this.gridSize = gridSize;
@@ -36,6 +39,7 @@ export class CreepMovement {
 		this.originGridX = originGridX;
 		this.originGridY = originGridY;
 		this.onCreepReachedOrigin = onCreepReachedOrigin;
+		this.onCreepStep = onCreepStep;
 	}
 
 	/**
@@ -110,36 +114,52 @@ export class CreepMovement {
 		const nextStep = this.calculateNextStep(creep);
 
 		if (!nextStep) {
-			// Creep has reached origin
 			this.removeCreep(creep);
-
 			if (this.onCreepReachedOrigin) {
 				this.onCreepReachedOrigin();
 			}
-
-			console.log("Creep reached origin!");
 			return;
 		}
 
-		// Update grid position
+		// Check laser collision before committing the move
+		if (this.onCreepStep?.(creep.gridX, creep.gridY, nextStep.x, nextStep.y)) {
+			this.killCreep(creep);
+			return;
+		}
+
 		creep.gridX = nextStep.x;
 		creep.gridY = nextStep.y;
 
-		// Calculate target screen position
 		const targetX = this.offsetX + nextStep.x * this.gridSize;
 		const targetY = this.offsetY + nextStep.y * this.gridSize;
 
-		// Animate the movement
 		creep.isMoving = true;
 		this.scene.tweens.add({
 			targets: creep.sprite,
 			x: targetX,
 			y: targetY,
-			duration: 300, // 300ms per step
+			duration: 300,
 			ease: "Linear",
 			onComplete: () => {
 				creep.isMoving = false;
 			},
+		});
+	}
+
+	private killCreep(creep: Creep): void {
+		const index = this.creeps.indexOf(creep);
+		if (index === -1) return;
+		this.creeps.splice(index, 1);
+
+		// Flash white then destroy
+		this.scene.tweens.add({
+			targets: creep.sprite,
+			alpha: 0,
+			scaleX: 2,
+			scaleY: 2,
+			duration: 200,
+			ease: "Power2",
+			onComplete: () => creep.sprite.destroy(),
 		});
 	}
 

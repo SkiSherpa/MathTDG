@@ -134,9 +134,10 @@ export default class GameScene extends Phaser.Scene {
 			this.gridSize,
 			this.gridComponent.getOffsetX(),
 			this.gridComponent.getOffsetY(),
-			Math.floor(this.gridWidth / 2), // origin grid X
-			Math.floor(this.gridHeight / 2), // origin grid Y
-			() => this.originHealthComponent.decrementHealth(1), // ← Callback!
+			Math.floor(this.gridWidth / 2),
+			Math.floor(this.gridHeight / 2),
+			() => this.originHealthComponent.decrementHealth(1),
+			(fx, fy, tx, ty) => this.checkLaserKill(fx, fy, tx, ty),
 		);
 
 		this.uiComponent = new UIComponent(this);
@@ -288,11 +289,11 @@ export default class GameScene extends Phaser.Scene {
 		for (const eq of equations) {
 			if (!eq.modified) continue;
 
-			const gridX = originGridX;          // x-coord 0 → center column
-			const gridY = originGridY - eq.b;   // y-intercept b → row above/below origin
+			const gridX = originGridX;
+			const gridY = originGridY - eq.b;
 
 			if (this.gridComponent.isValidPosition(gridX, gridY)) {
-				const tower = this.towerComponent.placeTower(gridX, gridY);
+				const tower = this.towerComponent.placeTower(gridX, gridY, { m: eq.m, b: eq.b });
 				if (tower) {
 					this.gridComponent.occupyCell(gridX, gridY);
 					console.log(
@@ -305,6 +306,43 @@ export default class GameScene extends Phaser.Scene {
 				);
 			}
 		}
+	}
+
+	/**
+	 * Returns true if a creep stepping from (fromGridX,fromGridY) to (toGridX,toGridY)
+	 * crosses any laser-line tower. Uses signed-distance sign-change test on the line
+	 * y = mx + b in math coordinates.
+	 */
+	private checkLaserKill(fromGridX: number, fromGridY: number, toGridX: number, toGridY: number): boolean {
+		const originGridX = Math.floor(this.gridWidth / 2); // 10
+		const originGridY = Math.floor(this.gridHeight / 2); // 10
+
+		// Grid → math coords  (y-axis is inverted)
+		const fx = fromGridX - originGridX;
+		const fy = originGridY - fromGridY;
+		const tx = toGridX - originGridX;
+		const ty = originGridY - toGridY;
+
+		for (const tower of this.towerComponent.getTowers()) {
+			if (!tower.equation) continue;
+
+			const { m, b } = tower.equation;
+			// Signed distance: positive = above the line, negative = below
+			const f1 = fy - (m * fx + b);
+			const f2 = ty - (m * tx + b);
+
+			if (f1 * f2 > 0) continue; // Same side — no crossing
+
+			const denom = f1 - f2;
+			if (Math.abs(denom) < 1e-10) continue; // Parallel segment
+
+			// Find the x coordinate of the crossing point and check it's in-grid
+			const t = f1 / denom;
+			const xCross = fx + t * (tx - fx);
+			const gridHalf = Math.floor(this.gridWidth / 2);
+			if (xCross >= -gridHalf && xCross <= gridHalf) return true;
+		}
+		return false;
 	}
 
 	private onGridClick(pointer: Phaser.Input.Pointer) {
