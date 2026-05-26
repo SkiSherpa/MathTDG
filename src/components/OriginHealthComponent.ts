@@ -10,10 +10,6 @@ export interface OriginHealth {
 	healthCount: number;
 }
 
-// For importing this component
-// 	import into GameScene
-// 		create a `this.originHealthComponent` for line 62 in *initializeComppnents
-
 export class OriginHealthComponent {
 	private scene: Phaser.Scene;
 	private coorX: number;
@@ -44,11 +40,7 @@ export class OriginHealthComponent {
 			this.healthCounterText.setText(`Health: ${this.healthCount}`);
 		}
 
-		console.log(`Origin health: ${this.healthCount}`);
-
-		// Check if health reached zero
 		if (this.healthCount <= 0) {
-			console.log("Origin destroyed! Game Over!");
 			// TODO: Trigger game over
 		}
 	}
@@ -130,6 +122,3 @@ export class OriginHealthComponent {
 		};
 	}
 }
-
-// set the width of screen
-// this.scene.scale.width

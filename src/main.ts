@@ -18,6 +18,3 @@ const config: Phaser.Types.Core.GameConfig = {
 };
 
 const game = new Phaser.Game(config);
-
-// Debug: Log when game is created
-console.log("Math Tower Defense Game initialized!");

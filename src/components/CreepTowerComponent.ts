@@ -132,10 +132,6 @@ export class CreepTowerComponent {
 
 		this.creepTowers.push(creepTower);
 
-		console.log(
-			`Creep Tower placed at grid position (${gridX}, ${gridY}) - Coordinates: (${coordX}, ${coordY}) - ${creepCount} creeps in ${turnsUntilRelease} turns`
-		);
-
 		return creepTower;
 	}
 
@@ -206,10 +202,6 @@ export class CreepTowerComponent {
 			const gridY = originGridY - y;
 			this.placeCreepTower(gridX, gridY, creepCount, turnsUntilRelease);
 		}
-
-		console.log(
-			`Created creep tower ring: ${this.creepTowers.length} towers placed in ${squareSize}x${squareSize} square`
-		);
 	}
 
 	public getCreepTowers(): CreepTower[] {

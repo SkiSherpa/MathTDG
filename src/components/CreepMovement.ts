@@ -72,8 +72,6 @@ export class CreepMovement {
 
 		this.creeps.push(creep);
 
-		console.log(`Creep spawned at grid (${gridX}, ${gridY})`);
-
 		return creep;
 	}
 

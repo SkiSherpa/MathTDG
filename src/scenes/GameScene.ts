@@ -44,8 +44,6 @@ export default class GameScene extends Phaser.Scene {
 	}
 
 	create() {
-		console.log("GameScene created!");
-
 		// Initialize components
 		this.initializeComponents();
 
@@ -154,7 +152,6 @@ export default class GameScene extends Phaser.Scene {
 	}
 
 	private startNewGame(turns: number = 3) {
-		console.log(`Starting new game with ${turns} turns`);
 
 		// Reset game state
 		this.currentTurn = 1;
@@ -235,13 +232,9 @@ export default class GameScene extends Phaser.Scene {
 			GAME_CONFIG.TURNS_UNTIL_RELEASE,
 		);
 
-		console.log(
-			`Placed random creep tower at grid (${position.gridX}, ${position.gridY})`,
-		);
 	}
 
 	private async switchToAttackPhase() {
-		console.log("Switching to attack phase");
 
 		// Switch to attack phase
 		this.uiComponent.setGamePhase("attack");
@@ -259,7 +252,6 @@ export default class GameScene extends Phaser.Scene {
 
 	private advanceToNextTurn() {
 		this.currentTurn++;
-		console.log(`Advancing to turn ${this.currentTurn}`);
 
 		// Decrement turn counters for all creep towers
 		const towers = this.creepTowerComponent.getCreepTowers();
@@ -272,7 +264,6 @@ export default class GameScene extends Phaser.Scene {
 
 		// Check if game is over
 		if (this.currentTurn >= this.maxTurns) {
-			console.log("Game Over!");
 			this.uiComponent.hidePhaseSwitchButton();
 			return;
 		}
@@ -303,14 +294,8 @@ export default class GameScene extends Phaser.Scene {
 				const tower = this.towerManager.placeLaser(gridX, gridY, { m: eq.m, b: eq.b });
 				if (tower) {
 					this.gridComponent.occupyCell(gridX, gridY);
-					console.log(
-						`Placed tower at grid (${gridX}, ${gridY}) from y = ${eq.m}x + ${eq.b}`,
-					);
 				}
 			} else {
-				console.log(
-					`Could not place tower at grid (${gridX}, ${gridY}) — cell occupied or out of bounds`,
-				);
 			}
 		}
 	}
@@ -353,7 +338,6 @@ export default class GameScene extends Phaser.Scene {
 				}
 			});
 
-			console.log(`Total creeps to spawn: ${spawnQueue.length}`);
 
 			// Create interval that handles BOTH spawning and movement
 			const gameInterval = this.time.addEvent({
@@ -363,7 +347,6 @@ export default class GameScene extends Phaser.Scene {
 					if (spawnQueue.length > 0) {
 						const spawn = spawnQueue.shift()!;
 						this.creepMovement.spawnCreep(spawn.gridX, spawn.gridY);
-						console.log(`Spawned creep, ${spawnQueue.length} remaining`);
 					}
 
 					// 2. Move all existing creeps
@@ -375,7 +358,6 @@ export default class GameScene extends Phaser.Scene {
 						this.creepMovement.getCreepCount() === 0
 					) {
 						gameInterval.destroy();
-						console.log("All creeps spawned and reached origin");
 						resolve();
 					}
 				},
