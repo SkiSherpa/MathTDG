@@ -161,7 +161,8 @@ export default class GameScene extends Phaser.Scene {
 		this.gameStarted = true;
 		this.originHealthComponent.setHealth(GAME_CONFIG.STARTING_HEALTH); // Reset Health to 10
 
-		// Clear existing creep towers
+		// Clear existing towers
+		this.towerComponent.clearAllTowers();
 		this.creepTowerComponent.clearAllCreepTowers();
 
 		// Place one random creep tower at distance 10 from origin
