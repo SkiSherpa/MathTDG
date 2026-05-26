@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import { GAME_CONFIG } from "../config/gameConfig";
 
 type CardValue = number | "+" | "-";
 type PlacementPhase = "idle" | "card_selected" | "equation_selected";
@@ -66,6 +67,7 @@ export class TowerPlacementComponent {
 	private phase: PlacementPhase = "idle";
 	private selectedCardIndex: number | null = null;
 	private selectedEquationId: number | null = null;
+	private drawsRemaining: number = GAME_CONFIG.MAX_DRAWS;
 
 	constructor(
 		scene: Phaser.Scene,
@@ -92,9 +94,9 @@ export class TowerPlacementComponent {
 
 	private addPanelBackground() {
 		const eqRowsH = 2 * EQ_H + EQ_GAP;
-		// Extra row: 3-button row + 12px gap + submit button row
+		// cards → equations → 3-button row → submit button row
 		const totalH =
-			PANEL_PAD + eqRowsH + 20 + CARD_H + 16 + BTN_H + 12 + BTN_H + PANEL_PAD;
+			PANEL_PAD + CARD_H + 20 + eqRowsH + 20 + BTN_H + 12 + BTN_H + PANEL_PAD;
 		const totalW = INNER_W + 2 * PANEL_PAD;
 		const bg = this.scene.add.rectangle(
 			INNER_W / 2,
@@ -118,11 +120,12 @@ export class TowerPlacementComponent {
 	}
 
 	private buildEquationSlots() {
+		const eqOffsetY = CARD_H + 20;
 		for (let i = 0; i < 4; i++) {
 			const col = i % 2;
 			const row = Math.floor(i / 2);
 			const slotX = col * (EQ_W + EQ_GAP);
-			const slotY = row * (EQ_H + EQ_GAP);
+			const slotY = eqOffsetY + row * (EQ_H + EQ_GAP);
 
 			const container = this.scene.add.container(slotX, slotY);
 
@@ -195,7 +198,7 @@ export class TowerPlacementComponent {
 	private buildCards() {
 		const totalCardW = 5 * CARD_W + 4 * CARD_GAP;
 		const cardsStartX = (INNER_W - totalCardW) / 2;
-		const cardsY = 2 * (EQ_H + EQ_GAP) + 20;
+		const cardsY = 0;
 
 		for (let i = 0; i < 5; i++) {
 			const cardX = cardsStartX + i * (CARD_W + CARD_GAP);
@@ -246,8 +249,7 @@ export class TowerPlacementComponent {
 	}
 
 	private buildButtons() {
-		const cardsY = 2 * (EQ_H + EQ_GAP) + 20;
-		const buttonY = cardsY + CARD_H + 16;
+		const buttonY = CARD_H + 20 + (2 * EQ_H + EQ_GAP) + 20;
 		const totalBtnW = 3 * BTN_W + 2 * BTN_GAP;
 		const btnStartX = (INNER_W - totalBtnW) / 2;
 
@@ -419,8 +421,11 @@ export class TowerPlacementComponent {
 
 	private onConfirm() {
 		if (this.phase === "idle") {
+			if (this.drawsRemaining <= 0) return;
+			this.drawsRemaining--;
 			this.dealCards();
 			this.simplifyAll();
+			this.updateDrawButton();
 		} else {
 			this.cancelSelection();
 		}
@@ -523,12 +528,23 @@ export class TowerPlacementComponent {
 
 	// ─── Phase / UI state ─────────────────────────────────────────────────────
 
+	private updateDrawButton() {
+		if (this.drawsRemaining <= 0) {
+			this.confirmBtn.label.setText("No Draws Left");
+			this.confirmBtn.bg.setFillStyle(0x5d6d7e);
+			this.confirmBtn.bg.setAlpha(0.6);
+		} else {
+			this.confirmBtn.label.setText(`Draw More (${this.drawsRemaining})`);
+			this.confirmBtn.bg.setFillStyle(0x27ae60);
+			this.confirmBtn.bg.setAlpha(1);
+		}
+	}
+
 	private enterPhase(phase: PlacementPhase) {
 		this.phase = phase;
 		switch (phase) {
 			case "idle":
-				this.confirmBtn.label.setText("Draw More");
-				this.confirmBtn.bg.setFillStyle(0x27ae60);
+				this.updateDrawButton();
 				this.setArrowsEnabled(false);
 				break;
 			case "card_selected":
@@ -589,6 +605,7 @@ export class TowerPlacementComponent {
 			eq.background.setStrokeStyle(2, 0x566573);
 			eq.equationText.setText("y = x");
 		}
+		this.drawsRemaining = GAME_CONFIG.MAX_DRAWS;
 		this.cancelSelection();
 		this.dealCards();
 	}
