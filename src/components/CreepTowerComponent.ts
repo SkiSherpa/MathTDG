@@ -71,7 +71,6 @@ export class CreepTowerComponent {
 		background.setStrokeStyle(2, Colors.creepTowers.border);
 
 		// Create circle placeholder (centered in the middle-bottom area)
-		const circleSize = this.gridSize * 0.3; // 30% of grid size
 		const circle = this.scene.add.circle(
 			0, // Center X
 			this.gridSize * 0.15, // Slightly below center
