@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import { Colors } from "../design/colors";
+import { CreepInteraction } from "../towers/Tower";
 
 export interface Creep {
 	sprite: Phaser.GameObjects.Arc;
@@ -19,8 +20,7 @@ export class CreepMovement {
 	private originGridX: number;
 	private originGridY: number;
 	private onCreepReachedOrigin?: () => void;
-	// Returns true if the creep should be killed (e.g. crossed a laser line)
-	private onCreepStep?: (fromGridX: number, fromGridY: number, toGridX: number, toGridY: number) => boolean;
+	private onCreepStep?: (interaction: CreepInteraction) => void;
 
 	constructor(
 		scene: Phaser.Scene,
@@ -30,7 +30,7 @@ export class CreepMovement {
 		originGridX: number,
 		originGridY: number,
 		onCreepReachedOrigin?: () => void,
-		onCreepStep?: (fromGridX: number, fromGridY: number, toGridX: number, toGridY: number) => boolean,
+		onCreepStep?: (interaction: CreepInteraction) => void,
 	) {
 		this.scene = scene;
 		this.gridSize = gridSize;
@@ -121,10 +121,17 @@ export class CreepMovement {
 			return;
 		}
 
-		// Check laser collision before committing the move
-		if (this.onCreepStep?.(creep.gridX, creep.gridY, nextStep.x, nextStep.y)) {
-			this.killCreep(creep);
-			return;
+		// Let towers react to this step; a tower may call interaction.kill()
+		if (this.onCreepStep) {
+			const interaction: CreepInteraction = {
+				fromGridX: creep.gridX,
+				fromGridY: creep.gridY,
+				toGridX: nextStep.x,
+				toGridY: nextStep.y,
+				kill: () => this.killCreep(creep),
+			};
+			this.onCreepStep(interaction);
+			if (!this.creeps.includes(creep)) return; // killed during dispatch
 		}
 
 		creep.gridX = nextStep.x;

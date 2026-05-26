@@ -2,7 +2,8 @@ import Phaser from "phaser";
 import { GridComponent } from "../components/GridComponent";
 import { CoordinateSystemComponent } from "../components/CoordinateSystemComponent";
 import { OriginComponent } from "../components/OriginComponent";
-import { TowerComponent } from "../components/TowerComponent";
+import { TowerManager } from "../towers/TowerManager";
+import { GridGeometry } from "../towers/Tower";
 import { UIComponent } from "../components/UIComponent";
 import { CreepTowerComponent } from "../components/CreepTowerComponent";
 import { OriginHealthComponent } from "../components/OriginHealthComponent";
@@ -19,7 +20,7 @@ export default class GameScene extends Phaser.Scene {
 	private gridComponent!: GridComponent;
 	private coordinateSystemComponent!: CoordinateSystemComponent;
 	private originComponent!: OriginComponent;
-	private towerComponent!: TowerComponent;
+	private towerManager!: TowerManager;
 	private uiComponent!: UIComponent;
 	private creepTowerComponent!: CreepTowerComponent;
 	private originHealthComponent!: OriginHealthComponent;
@@ -104,14 +105,14 @@ export default class GameScene extends Phaser.Scene {
 			this.gridComponent.getOffsetY(),
 		);
 
-		this.towerComponent = new TowerComponent(
-			this,
-			this.gridSize,
-			this.gridWidth,
-			this.gridHeight,
-			this.gridComponent.getOffsetX(),
-			this.gridComponent.getOffsetY(),
-		);
+		const geo: GridGeometry = {
+			gridSize: this.gridSize,
+			gridWidth: this.gridWidth,
+			gridHeight: this.gridHeight,
+			offsetX: this.gridComponent.getOffsetX(),
+			offsetY: this.gridComponent.getOffsetY(),
+		};
+		this.towerManager = new TowerManager(this, geo);
 
 		this.creepTowerComponent = new CreepTowerComponent(
 			this,
@@ -137,7 +138,7 @@ export default class GameScene extends Phaser.Scene {
 			Math.floor(this.gridWidth / 2),
 			Math.floor(this.gridHeight / 2),
 			() => this.originHealthComponent.decrementHealth(1),
-			(fx, fy, tx, ty) => this.checkLaserKill(fx, fy, tx, ty),
+			(i) => this.towerManager.applyCreepStep(i),
 		);
 
 		this.uiComponent = new UIComponent(this);
@@ -162,7 +163,7 @@ export default class GameScene extends Phaser.Scene {
 		this.originHealthComponent.setHealth(GAME_CONFIG.STARTING_HEALTH); // Reset Health to 10
 
 		// Clear existing towers
-		this.towerComponent.clearAllTowers();
+		this.towerManager.clear();
 		this.creepTowerComponent.clearAllCreepTowers();
 
 		// Place one random creep tower at distance 10 from origin
@@ -294,7 +295,7 @@ export default class GameScene extends Phaser.Scene {
 			const gridY = originGridY - eq.b;
 
 			if (this.gridComponent.isValidPosition(gridX, gridY)) {
-				const tower = this.towerComponent.placeTower(gridX, gridY, { m: eq.m, b: eq.b });
+				const tower = this.towerManager.placeLaser(gridX, gridY, { m: eq.m, b: eq.b });
 				if (tower) {
 					this.gridComponent.occupyCell(gridX, gridY);
 					console.log(
@@ -309,43 +310,6 @@ export default class GameScene extends Phaser.Scene {
 		}
 	}
 
-	/**
-	 * Returns true if a creep stepping from (fromGridX,fromGridY) to (toGridX,toGridY)
-	 * crosses any laser-line tower. Uses signed-distance sign-change test on the line
-	 * y = mx + b in math coordinates.
-	 */
-	private checkLaserKill(fromGridX: number, fromGridY: number, toGridX: number, toGridY: number): boolean {
-		const originGridX = Math.floor(this.gridWidth / 2); // 10
-		const originGridY = Math.floor(this.gridHeight / 2); // 10
-
-		// Grid → math coords  (y-axis is inverted)
-		const fx = fromGridX - originGridX;
-		const fy = originGridY - fromGridY;
-		const tx = toGridX - originGridX;
-		const ty = originGridY - toGridY;
-
-		for (const tower of this.towerComponent.getTowers()) {
-			if (!tower.equation) continue;
-
-			const { m, b } = tower.equation;
-			// Signed distance: positive = above the line, negative = below
-			const f1 = fy - (m * fx + b);
-			const f2 = ty - (m * tx + b);
-
-			if (f1 * f2 > 0) continue; // Same side — no crossing
-
-			const denom = f1 - f2;
-			if (Math.abs(denom) < 1e-10) continue; // Parallel segment
-
-			// Find the x coordinate of the crossing point and check it's in-grid
-			const t = f1 / denom;
-			const xCross = fx + t * (tx - fx);
-			const gridHalf = Math.floor(this.gridWidth / 2);
-			if (xCross >= -gridHalf && xCross <= gridHalf) return true;
-		}
-		return false;
-	}
-
 	private onGridClick(pointer: Phaser.Input.Pointer) {
 		if (!this.gameStarted) return;
 		if (this.uiComponent.getGamePhase() !== "placement") return;
@@ -358,10 +322,8 @@ export default class GameScene extends Phaser.Scene {
 
 		// Check if position is valid
 		if (this.gridComponent.isValidPosition(gridX, gridY)) {
-			const tower = this.towerComponent.placeTower(gridX, gridY);
-			if (tower) {
-				this.gridComponent.occupyCell(gridX, gridY);
-			}
+			this.towerManager.placeBasic(gridX, gridY);
+			this.gridComponent.occupyCell(gridX, gridY);
 		}
 	}
 	/**
