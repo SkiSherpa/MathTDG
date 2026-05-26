@@ -1,7 +1,6 @@
 import Phaser from "phaser";
 import { Tower, GridGeometry, CreepInteraction } from "./Tower";
-import { BasicTower } from "./BasicTower";
-import { LaserLineTower } from "./LaserLineTower";
+import { createTower } from "./TowerRegistry";
 
 export class TowerManager {
 	private readonly scene: Phaser.Scene;
@@ -13,13 +12,25 @@ export class TowerManager {
 		this.geo = geo;
 	}
 
+	// ── Typed placement helpers (one per tower type) ────────────────────────
+	// Each is a thin wrapper over place() that preserves call-site type safety.
+	// Add a new one-liner here when registering a new tower type.
+
 	placeBasic(gridX: number, gridY: number): Tower {
-		return this.add(new BasicTower(this.scene, this.geo, gridX, gridY));
+		return this.place("basic", gridX, gridY);
 	}
 
 	placeLaser(gridX: number, gridY: number, equation: { m: number; b: number }): Tower {
-		return this.add(new LaserLineTower(this.scene, this.geo, gridX, gridY, equation));
+		return this.place("laserLine", gridX, gridY, equation);
 	}
+
+	// ── Generic placement (used internally and available for dynamic use) ───
+
+	place(type: string, gridX: number, gridY: number, opts?: unknown): Tower {
+		return this.add(createTower(type, this.scene, this.geo, gridX, gridY, opts));
+	}
+
+	// ── Lifecycle / dispatch ────────────────────────────────────────────────
 
 	/** Dispatches to every tower's onCreepStep. Towers call i.kill() if they want. */
 	applyCreepStep(interaction: CreepInteraction): void {

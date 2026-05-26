@@ -20,6 +20,15 @@ export interface CreepInteraction {
 	kill(): void;
 }
 
+/** Signature every entry in TowerRegistry must satisfy. */
+export type TowerFactory = (
+	scene: Phaser.Scene,
+	geo: GridGeometry,
+	gridX: number,
+	gridY: number,
+	opts?: unknown,
+) => Tower;
+
 export abstract class Tower {
 	readonly gridX: number;
 	readonly gridY: number;
